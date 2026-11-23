@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -21,7 +21,9 @@
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN",sans-serif;
   -webkit-text-size-adjust:100%;}
-body{overscroll-behavior:none}
+body{overscroll-behavior:none;touch-action:manipulation}
+/* iPhoneは16px未満の入力欄にフォーカスすると自動で拡大するため、入力欄は必ず16px以上 */
+input,textarea,select{font-size:16px!important}
 button,input,textarea,select{font:inherit;color:inherit}
 button{cursor:pointer}
 .screen{display:none;flex-direction:column;height:100%;}
@@ -274,7 +276,7 @@ pre.prompt{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:
       <button class="btn sub" style="margin-top:8px" onclick="document.getElementById('importFile').click()">バックアップから復元</button>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(this)">
     </div>
-    <p class="muted" style="text-align:center">コース攻略ガイド v1.4</p>
+    <p class="muted" style="text-align:center">コース攻略ガイド v1.5</p>
   </main>
 </section>
 
@@ -647,33 +649,57 @@ function guideData(g){
 }
 function buildAnalysisPrompt(){
   const tags=TAG_GROUPS.map(([k,l])=>`${l}：${S.tags[k].join(' / ')}`).join('\n');
+  const course=guideData(A).course, st=A.startNo||1;
   return `あなたはゴルフのコースマネジメントのコーチです。
 下の【コースデータ】は、私が使っている攻略ガイドアプリのデータです（ホールごとの作戦と、ラウンド中に残したタグ付きのプレーメモ）。
-添付したスコアアプリのスクリーンショット（今回のラウンドのスコア）と合わせて分析し、次回に向けて攻略ガイドを更新してください。
+添付したスコアアプリ（楽天GORA）のスクリーンショットと合わせて分析し、次回に向けて攻略ガイドを更新してください。
+（「ゴルフ攻略ガイド更新」のスキルがある場合も、この指示文の内容を優先してください）
+
+## スコアカード画像の読み方（楽天GORA）
+上から次の順に並んでいる。
+1. ホール番号（例：10〜18と「前半」合計）
+2. パー
+3. スコア（○△□などの枠は無視して数字だけ読む）
+4. パット数
+5. ティーショットの結果
+   - ◎ = フェアウェイキープ（ショートホールはグリーンオン）
+   - ← = 左に外した、→ = 右に外した
+   - ↓ = ショート（手前に外した）、↑ = オーバー（奥に外した）
+   - 空欄 = 記録なし（不明として扱う）
+   - 「ショット成功率」は◎の割合
+6. ティーショットの番手（U4はUT20と同じクラブとみなしてよい。空欄は不明）
+7. バンカー（数）
+8. ペナルティ（数）
+9. OB（数）
+合計の列（「前半」など）で、スコアとパット数の読み取りを検算する。
 
 ## 手順
-1. 画像から、ホールごとのスコア・パット数・ティーショットの結果（方向やOBなど、記録があれば）を読み取って表にする。読み取れない値は「不明」とし、推測で埋めない。このコース（${guideData(A).course}）のホールだけを対象にする
-2. 各ホールの作戦（tee/dir/aim/second/green）と実際の結果を照合し、作戦が機能したホール・崩れたホールを挙げる
+1. 画像から、ホールごとのスコア・パット数・ティーショットの結果（方向・番手）・バンカー・ペナルティ・OBを読み取って表にする。読み取れない値は「不明」とし、推測で埋めない。対象はこのコース（${course}：${st}〜${st+8}番）のホールだけ
+2. 各ホールの作戦（tee/dir/aim/second/green）と実際の結果を照合し、作戦が機能したホールと崩れたホールを挙げる
 3. プレーメモのタグ（過去分も含む）から、叩いたホール・癖玉・トラブルの傾向をまとめる
-4. 次回に向けて作戦を見直す。変更は根拠があるホールだけにし、うまくいっている作戦は変えない
+4. 次回に向けて作戦を見直す。変更するのは根拠があるホールだけにし、うまくいっている作戦は変えない。原因が分からないホールは無理に変えず、次回メモを残すよう促す
 
 ## 出力
-最初に分析を日本語で簡潔に書き、最後に次のJSONを1つだけ \`\`\`json のコードブロックで出力してください。
+最初に分析を日本語で簡潔に書く（読み取り表、機能した・崩れたホール、傾向、変更点）。スマホで読むので短めにする。
+最後に次のJSONを1つだけ \`\`\`json のコードブロックで出力する。
 
-{"app":"golf-guide-update","club":"${A.club}","course":"${A.course}","startNo":${A.startNo||1},
+{"app":"golf-guide-update","club":"${A.club}","course":"${A.course}","startNo":${st},
  "summary":"今回の分析の要点（3〜6行。次回意識すること中心）",
  "notes":"更新後のコース共通ルール（変更不要なら現在の内容をそのまま）",
- "round":{"date":"YYYY-MM-DD（画像から分かれば。不明なら空文字）","holes":[{"no":1,"score":5,"putts":2,"tags":["ダブルボギー"],"note":"結果の一言"}]},
- "holes":[{"no":1,"par":4,"yard":"…","hc":"…","target":"…","feature":"…","tee":"…","dir":"C","aim":"…","second":"…","green":"…","change":"変更理由（変更なしなら空文字）"}]}
+ "round":{"date":"YYYY-MM-DD（画像から分かれば。不明なら空文字）","holes":[{"no":${st},"score":5,"putts":2,"tags":["ダブルボギー"],"note":"結果の一言"}]},
+ "holes":[{"no":${st},"par":4,"yard":"…","hc":"…","target":"…","feature":"…","tee":"…","dir":"C","aim":"…","second":"…","green":"…","change":"変更理由（変更なしなら空文字）"}]}
 
 ## JSONのルール
-- holesは9ホール全部を出力する。変更しない項目も現在の値をそのまま入れる（空にすると消えてしまうため）
-- featureの「前回」の記述は、今回の結果で更新してよい
-- par・yard・hcが空のホールは、公式サイトや楽天GORAなど公開情報で調べて補ってよい（確信が持てない場合は空のまま）
+- club・course・startNoは上の値をそのまま使う
+- holesは9ホール全部を出力する。変更しない項目も現在の値をそのまま入れる（空にすると消えてしまうため）。targetなど、もとから空の項目は空のまま
+- featureには、もとのコース情報を残したまま「\\n【前回】スコア・ティー結果・トラブル」を追記・更新してよい
+- par・yard・hcが空のホールは、公式サイトや楽天GORAなどの公開情報で調べて補ってよい（確信が持てない場合は空のまま）
 - teeは次のクラブから選ぶ（複数なら「 / 」区切り）：${S.clubs.join(' / ')}
 - dirは L=左, LC=左寄り, C=センター, RC=右寄り, R=右
 - round.holesのtagsは次のタグ名だけを使う（該当がなければ空配列）。スコアがパー+2ならダブルボギー、+3ならトリプルボギー、+4以上ならそれ以上
 ${tags}
+- バンカー・ペナルティ・OBが1以上ならそのタグを付ける。パットが3以上なら3パット
+- 矢印は外れた方向しか分からないので、癖玉のタグ（引っ掛け・スライス・チョロなど）は付けず、noteに「ティー左」「ティーショート」のように書く。プレーメモに球筋の記録があればそれに従う
 - 画像が添付されていない場合は、roundを省略してプレーメモだけで分析する
 - memos（プレーメモ）はアプリ側で保持するので出力しない
 
@@ -879,6 +905,9 @@ function importData(inp){
   r.readAsText(f);
 }
 
+/* キーボードを閉じたときに画面のズレ・拡大が残らないよう元に戻す */
+document.addEventListener('focusout',()=>{setTimeout(()=>{const a=document.activeElement;
+  if(!a||!/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))window.scrollTo(0,0);},80);});
 renderHome();
 if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 </script>
