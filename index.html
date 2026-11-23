@@ -274,7 +274,7 @@ pre.prompt{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:
       <button class="btn sub" style="margin-top:8px" onclick="document.getElementById('importFile').click()">バックアップから復元</button>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(this)">
     </div>
-    <p class="muted" style="text-align:center">コース攻略ガイド v1.3</p>
+    <p class="muted" style="text-align:center">コース攻略ガイド v1.4</p>
   </main>
 </section>
 
@@ -486,15 +486,33 @@ function deleteGuide(){
 
 /* ---------- メモ取り込み（Claude変換） ---------- */
 function buildPrompt(){
-  return `以下のゴルフ場の攻略メモを、次のJSON形式に変換してください。JSONだけを出力してください（説明文は不要）。
+  return `以下のゴルフ場の攻略メモを、私のゴルフ攻略ガイドアプリに取り込むためのJSONに変換してください。
 
-{"club":"ゴルフ場名","courses":[
+## 手順
+1. メモからゴルフ場名とコース名を特定する
+2. メモに書かれていない基本情報を、Webで調べて補う。対象は次の項目
+   - 正式なゴルフ場名、コース名（OUT/IN、西/中/東 など）
+   - ホールごとのパー、距離（ヤード）、ハンディキャップ（HC）
+   - ホールの形状・特徴（ドッグレッグ、打ち上げ／打ち下ろし、池・OB・バンカーの位置、2グリーンかどうか など）
+   調べる先は、ゴルフ場の公式サイトのコースガイド、楽天GORA、じゃらんゴルフ、GDOなど
+3. メモの内容とWebの情報を合わせて、下の形式のJSONを作る
+4. 回答の構成は次のとおり：調べた情報源（サイト名とURL）と、補った項目を短く一覧にする → 最後にJSONを1つだけ \`\`\`json のコードブロックで出力する
+
+## 調べた情報の扱い
+- メモに書いてある内容が最優先。Webの情報と食い違うときはメモの値を使い、回答の一覧で食い違いを指摘する
+- 距離は、レギュラーティー（白ティーなど一般的な男性用ティー）のヤードを使う。2グリーンでメモの表記があればそれに合わせ、なければ「306y（341y）」のように「メイン（もう一方）」の形にする。どのティー・グリーンの距離かをnotesの先頭に1行で書く
+- 調べて分かったホールの特徴は、featureの先頭に「【コース情報】」と付けて入れ、メモ由来の内容と区別する
+- 見つからない情報や確信が持てない情報は推測で埋めず、空文字のままにする（parは0）
+- 改修などでホールの番号や距離が変わっている場合は、新しい情報を使い、その旨を一覧に書く
+
+## JSONの形式
+{"club":"ゴルフ場名","sources":["参照したURL"],"courses":[
  {"course":"コース名","startNo":1,"notes":"このコースの目標・共通ルール","holes":[
   {"no":1,"par":4,"yard":"380y","hc":"7","target":"5","feature":"ホールの特徴・前回の結果","tee":"1W","dir":"C","aim":"ティーショットの狙い目","second":"セカンド以降の注意点","green":"グリーン周りの注意事項"}
  ]}
 ]}
 
-ルール：
+## JSONのルール
 - メモに複数のコース（OUTとIN、西と中など）が入っている場合は、coursesに9ホールずつ分けて入れる
 - コース名はメモの表記に合わせる（OUT/IN、西コース/中コースなど）。1〜18番の通し番号だけでコース名がない場合は、1〜9番を"OUT"、10〜18番を"IN"にする
 - startNoは、ホール番号が1〜9ならstartNo=1、10〜18ならstartNo=10（noも同じ番号）
@@ -502,7 +520,7 @@ function buildPrompt(){
 - teeは次のクラブ名から選ぶ：${S.clubs.join(' / ')}（候補が複数なら「UT20 / 5W」のように / 区切り。一覧にないクラブはメモの表記のまま。記載なしは空文字）
 - dirはティーショットの方向：L=左, LC=左寄り, C=センター, RC=右寄り, R=右（不明なら空文字）
 - yardは表記のまま文字列（例 "306y（341y）"）。par不明は0
-- 記載がない項目は空文字。メモの内容は省略せず要点を残す
+- メモにもWebにも情報がない項目は空文字。メモの内容は省略せず要点を残す
 
 【攻略メモ】
 （ここにメモを貼り付け）`;
@@ -538,6 +556,7 @@ function previewImport(){
   impJ={club:norm2(j.club),courses:courses.map(c=>{
     const st=+c.startNo===10||(c.holes||[]).some(h=>+h.no>=10)?10:1;
     return {course:norm2(c.course)||(st===10?'IN':'OUT'),startNo:st,notes:norm2(c.notes),holes:c.holes||[]};})};
+  impJ.sources=Array.isArray(j.sources)?j.sources.map(norm2).filter(Boolean):[];
   const exist=findClub(impJ.club);
   const clubs=[...new Set(S.guides.map(g=>g.club))];
   $('impPreview').innerHTML=`<p class="label">ゴルフ場</p>
@@ -547,7 +566,9 @@ function previewImport(){
     </select>
     ${exist&&exist!==impJ.club?`<p class="muted" style="margin:4px 0 0">メモの「${esc(impJ.club)}」は登録済みの「${esc(exist)}」と同じと判断しました。違う場合は「新規」を選んでください。</p>`:''}
     <input class="input" id="impClubNew" style="margin-top:6px" value="${esc(impJ.club)}" oninput="renderImpRows()" placeholder="ゴルフ場名">
-    <p class="label" style="margin-top:12px">コース（${impJ.courses.length}件）</p><div id="impRows"></div>`;
+    <p class="label" style="margin-top:12px">コース（${impJ.courses.length}件）</p><div id="impRows"></div>
+    ${impJ.sources.length?`<p class="label" style="margin-top:12px">Claudeが参照した情報源（${impJ.sources.length}件）</p>
+      <div class="muted" style="word-break:break-all;line-height:1.5">${impJ.sources.slice(0,6).map(esc).join('<br>')}</div>`:''}`;
   renderImpRows();
   $('impStep1').style.display='none';$('impStep2').style.display='';
 }
@@ -648,6 +669,7 @@ function buildAnalysisPrompt(){
 ## JSONのルール
 - holesは9ホール全部を出力する。変更しない項目も現在の値をそのまま入れる（空にすると消えてしまうため）
 - featureの「前回」の記述は、今回の結果で更新してよい
+- par・yard・hcが空のホールは、公式サイトや楽天GORAなど公開情報で調べて補ってよい（確信が持てない場合は空のまま）
 - teeは次のクラブから選ぶ（複数なら「 / 」区切り）：${S.clubs.join(' / ')}
 - dirは L=左, LC=左寄り, C=センター, RC=右寄り, R=右
 - round.holesのtagsは次のタグ名だけを使う（該当がなければ空配列）。スコアがパー+2ならダブルボギー、+3ならトリプルボギー、+4以上ならそれ以上
