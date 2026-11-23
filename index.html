@@ -47,11 +47,14 @@ textarea{min-height:84px;resize:vertical;line-height:1.5}
   background:var(--g);color:#fff;font-size:16px;font-weight:700;padding:15px 22px;box-shadow:0 6px 18px rgba(0,0,0,.22)}
 /* home */
 .group-title{font-size:14px;font-weight:700;color:var(--g);margin:6px 2px 8px}
-.guide-item{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.guide-item{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
 .guide-item .info{flex:1;min-width:0}
 .guide-item .t{font-size:17px;font-weight:700}
 .guide-item .s{font-size:12px;color:var(--sub);margin-top:3px}
 .guide-item .open{background:var(--g);color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:700}
+.guide-item .btns{display:flex;gap:6px;width:100%}
+.guide-item .btns button{flex:1}
+.guide-item .ana{background:#fff3d6;color:#8a5a00;border:0;border-radius:10px;padding:10px 12px;font-weight:700}
 .guide-item .edit{background:var(--gl);color:var(--g);border:0;border-radius:10px;padding:10px 12px}
 .empty{text-align:center;color:var(--sub);padding:40px 10px;line-height:1.8}
 /* edit */
@@ -76,28 +79,38 @@ textarea{min-height:84px;resize:vertical;line-height:1.5}
 .slider{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .slider::-webkit-scrollbar{display:none}
 .slide{flex:0 0 100%;width:100%;scroll-snap-align:start;scroll-snap-stop:always;overflow-y:auto;padding:12px 12px calc(var(--sb) + 84px)}
-.holehead{display:flex;align-items:flex-end;gap:10px;margin:2px 4px 10px}
-.holeno{font-size:44px;font-weight:800;line-height:1;color:var(--g)}
-.holeno small{font-size:18px;margin-left:2px}
-.holemeta{font-size:16px;font-weight:700;color:var(--sub);padding-bottom:4px}
-.teebox{display:flex;gap:12px;align-items:stretch}
-.teeclub{flex:0 0 108px;background:var(--g);color:#fff;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px}
-.teeclub .k{font-size:11px;opacity:.85}
-.teeclub .v{font-size:34px;font-weight:800;line-height:1.15}
-.teeclub .d{font-size:14px;font-weight:700;margin-top:2px}
-.fw{flex:1;background:#fff;border-radius:14px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;padding:4px}
-.sec h3{margin:0 0 6px;font-size:14px;color:var(--g);display:flex;align-items:center;gap:6px}
-.sec .body{font-size:17px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.sec .none{color:#a0a8a2;font-size:15px}
-.aim{font-size:17px;font-weight:700;margin-top:10px;line-height:1.5;white-space:pre-wrap}
-.teeclub .v.multi{font-size:22px;line-height:1.25;text-align:center}
-.target{display:inline-block;background:#fff3d6;color:#8a5a00;font-weight:800;border-radius:8px;padding:4px 10px;margin:0 4px 8px;font-size:15px}
-.notesbtn{display:block;width:100%;border:1px dashed var(--g2);background:#f7fbf8;color:var(--g);border-radius:10px;padding:8px;font-size:14px;font-weight:700;margin-bottom:10px}
-.feat{font-size:15px;line-height:1.55;color:#3c463f;white-space:pre-wrap;background:#fafbf8}
+
+.slide{padding:8px 10px calc(var(--sb) + 76px)}
+.vh{display:flex;align-items:center;gap:8px;margin:0 2px 4px}
+.vno{font-size:30px;font-weight:800;color:var(--g);line-height:1}
+.vno small{font-size:14px;margin-left:1px}
+.vmeta{font-size:14px;font-weight:700;color:var(--sub);flex:1;min-width:0}
+.target{background:#fff3d6;color:#8a5a00;font-weight:800;border-radius:8px;padding:3px 8px;font-size:13px;white-space:nowrap}
+.notesbtn{border:1px solid var(--line);background:#fff;border-radius:8px;width:34px;height:30px;font-size:15px;padding:0}
+.feat{font-size:13px;line-height:1.45;color:#4a544d;white-space:pre-wrap;margin:0 2px 6px}
+.stats{font-size:12px;color:var(--sub);margin:0 2px 6px;display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.vcard{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;overflow:hidden}
+.vrow{display:flex;gap:8px;padding:9px 10px;border-top:1px solid var(--line);align-items:flex-start}
+.vrow:first-child{border-top:0}
+.vrow .lbl{flex:0 0 46px;font-size:11px;font-weight:800;color:var(--g);line-height:1.3;padding-top:2px}
+.vrow .txt{flex:1;font-size:15px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.vrow.tee{background:var(--gl)}
+.teeclub{flex:0 0 auto;min-width:64px;max-width:110px;background:var(--g);color:#fff;border-radius:10px;padding:6px 8px;text-align:center;font-size:22px;font-weight:800;line-height:1.15}
+.teeclub.multi{font-size:16px}
+.teeinfo{flex:1;min-width:0}
+.teeinfo .dir{font-size:15px;font-weight:800;color:var(--g)}
+.teeinfo .aim{font-size:15px;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.none{color:#a0a8a2;font-size:14px}
+.memos{padding:8px 10px}
+.mh{font-size:13px;font-weight:800;color:var(--g);margin-bottom:2px}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:3px}
+.tag{font-size:12px;font-weight:700;border-radius:6px;padding:2px 7px}
+.tagpick{display:flex;flex-wrap:wrap;gap:6px}
+.tagpick button{border:1px solid;border-radius:16px;padding:7px 12px;font-size:14px;font-weight:700}
 .memo{border-top:1px dashed var(--line);padding:9px 0;display:flex;gap:8px}
 .memo:first-of-type{border-top:0}
 .memo .d{font-size:12px;color:var(--sub);flex:0 0 auto;padding-top:3px}
-.memo .x{flex:1;font-size:16px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.memo .x{flex:1;font-size:15px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
 .memo .del{border:0;background:transparent;color:#b5bcb6;font-size:18px;padding:0 4px}
 .vfoot{position:fixed;left:0;right:0;bottom:0;z-index:6;background:rgba(255,255,255,.96);border-top:1px solid var(--line);
   padding:8px 10px calc(var(--sb) + 8px);display:flex;align-items:center;gap:8px;backdrop-filter:blur(8px)}
@@ -159,7 +172,6 @@ pre.prompt{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:
       </div>
       <p class="label" style="margin-top:12px">コース共通のメモ（目標・当日のルールなど）</p>
       <textarea id="edNotes" placeholder="例：目標45。朝一は1Wにこだわらない。グリーンは手前から" oninput="D.notes=this.value;markDirty()"></textarea>
-      <button class="btn sub" style="margin-top:12px" onclick="openImport()">📋 メモから取り込む（Claude変換）</button>
     </div>
 
     <div class="chips" id="edChips"></div>
@@ -244,6 +256,11 @@ pre.prompt{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:
       <button class="btn sub" style="margin-top:10px" onclick="resetClubs()">初期のクラブ一覧に戻す</button>
     </div>
     <div class="card">
+      <p class="label">プレーメモのタグ</p>
+      <div id="stTags"></div>
+      <button class="btn sub" style="margin-top:10px" onclick="resetTags()">初期のタグに戻す</button>
+    </div>
+    <div class="card">
       <p class="label">閲覧時の画面</p>
       <label style="display:flex;align-items:center;gap:10px;font-size:15px">
         <input type="checkbox" id="stWake" onchange="setWake(this.checked)" style="width:22px;height:22px">
@@ -257,7 +274,7 @@ pre.prompt{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:
       <button class="btn sub" style="margin-top:8px" onclick="document.getElementById('importFile').click()">バックアップから復元</button>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(this)">
     </div>
-    <p class="muted" style="text-align:center">コース攻略ガイド v1.0</p>
+    <p class="muted" style="text-align:center">コース攻略ガイド v1.3</p>
   </main>
 </section>
 
@@ -265,7 +282,9 @@ pre.prompt{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:
 <div class="modal" id="memoModal" onclick="if(event.target===this)closeModal('memoModal')">
   <div class="sheet">
     <h2 id="memoTitle">プレーメモ</h2>
-    <textarea id="memoText" placeholder="例：7Iで手前から。風アゲで1番手大きめが正解だった" style="min-height:120px"></textarea>
+    <div id="memoTags"></div>
+    <p class="label" style="margin-top:10px">メモ（任意）</p>
+    <textarea id="memoText" placeholder="例：UTで左の木狙い→引っ掛けて左ラフ。次は5Iで" style="min-height:84px"></textarea>
     <div class="row" style="margin-top:10px">
       <button class="btn sub" onclick="closeModal('memoModal')">キャンセル</button>
       <button class="btn" onclick="saveMemo()">保存</button>
@@ -275,23 +294,55 @@ pre.prompt{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:
 
 <!-- メモ取り込みシート -->
 <div class="modal" id="importModal" onclick="if(event.target===this)closeModal('importModal')">
-  <div class="sheet">
+  <div class="sheet" id="impStep1">
     <h2>メモから取り込む</h2>
     <p class="muted" style="margin-top:0">① 指示文をコピー → ② Claudeに指示文と攻略メモを貼り付けて送信 → ③ 返ってきた結果をここに貼り付け</p>
     <pre class="prompt" id="promptText"></pre>
     <button class="btn sub" onclick="copyPrompt()">① 指示文をコピー</button>
     <p class="label" style="margin-top:14px">③ Claudeの結果を貼り付け</p>
-    <textarea id="importText" placeholder='{"club":"…","course":"…","holes":[…]}' style="min-height:110px;font-size:13px"></textarea>
+    <textarea id="importText" placeholder="Claudeの回答をそのまま全部貼り付け" style="min-height:110px;font-size:13px"></textarea>
     <div class="row" style="margin-top:10px">
       <button class="btn sub" onclick="closeModal('importModal')">閉じる</button>
-      <button class="btn" onclick="applyImport()">取り込む</button>
+      <button class="btn" onclick="previewImport()">内容を確認</button>
+    </div>
+  </div>
+  <div class="sheet" id="impStep2" style="display:none">
+    <h2>取り込み内容の確認</h2>
+    <div id="impPreview"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn sub" onclick="impBack()">戻る</button>
+      <button class="btn" onclick="applyImport()">登録する</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="anaModal" onclick="if(event.target===this)closeModal('anaModal')">
+  <div class="sheet">
+    <h2 id="anaTitle">分析・更新</h2>
+    <div id="anaStep1">
+      <p class="muted" style="margin-top:0">① 下のボタンで「指示文＋このコースのデータ（攻略内容・プレーメモ・タグ）」をコピー<br>② Claudeに貼り付け、スコアアプリのスクリーンショットを添付して送信<br>③ 返ってきた回答を全部コピーして、下に貼り付け</p>
+      <button class="btn" onclick="copyAnalysis()">① 分析用の指示文とデータをコピー</button>
+      <p class="muted" id="anaSize" style="text-align:right;margin:4px 0 0"></p>
+      <p class="label" style="margin-top:14px">③ Claudeの分析結果を貼り付け</p>
+      <textarea id="anaText" placeholder="Claudeの回答をそのまま全部貼り付け" style="min-height:110px;font-size:13px"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn sub" onclick="closeModal('anaModal')">閉じる</button>
+        <button class="btn" onclick="previewAnalysis()">内容を確認</button>
+      </div>
+    </div>
+    <div id="anaStep2" style="display:none">
+      <div id="anaPreview" style="font-size:14px;line-height:1.55"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn sub" onclick="$('anaStep1').style.display='';$('anaStep2').style.display='none'">戻る</button>
+        <button class="btn" onclick="applyAnalysis()">反映する</button>
+      </div>
     </div>
   </div>
 </div>
 
 <div class="modal" id="notesModal" onclick="if(event.target===this)closeModal('notesModal')">
   <div class="sheet">
-    <h2>コース共通ルール</h2>
+    <h2>コース共通ルール・分析</h2>
     <div id="notesBody" style="font-size:16px;line-height:1.65;white-space:pre-wrap;word-break:break-word"></div>
     <button class="btn sub" style="margin-top:14px" onclick="closeModal('notesModal')">閉じる</button>
   </div>
@@ -302,6 +353,9 @@ pre.prompt{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:
 <script>
 const KEY='golfGuide.v1';
 const DEFAULT_CLUBS=['1W','UT20','5I','6I','7I','8I','9I','PW','AW','54','58'];
+const TAG_GROUPS=[['score','叩いた','#c0392b','#fdecea'],['tee','ティーショットの癖玉','#8a5a00','#fff3d6'],['trouble','トラブル','#3b5bab','#e8eefb']];
+const DEFAULT_TAGS={score:['ダブルボギー','トリプルボギー','それ以上'],tee:['引っ掛け','チーピン','プッシュ','スライス','天ぷら','チョロ','ダフリ','トップ'],trouble:['OB','ペナルティ','バンカー','3パット']};
+const DIRARROW={L:'← 左',LC:'↖ 左寄り',C:'↑ センター',RC:'↗ 右寄り',R:'→ 右'};
 const DIRS=[['L','左'],['LC','左寄り'],['C','センター'],['RC','右寄り'],['R','右']];
 const DIRX={L:22,LC:36,C:50,RC:64,R:78};
 const $=id=>document.getElementById(id);
@@ -312,8 +366,12 @@ const teeList=t=>String(t||'').split('/').map(x=>x.trim()).filter(Boolean);
 
 let S=load();
 function load(){
-  try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.guides))return {clubs:d.clubs?.length?d.clubs:[...DEFAULT_CLUBS],guides:d.guides,wake:!!d.wake};}catch(e){}
-  return {clubs:[...DEFAULT_CLUBS],guides:[],wake:false};
+  try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.guides))return normState(d);}catch(e){}
+  return normState({});
+}
+function normState(d){
+  const tags={};TAG_GROUPS.forEach(([k])=>tags[k]=Array.isArray(d.tags?.[k])?d.tags[k]:[...DEFAULT_TAGS[k]]);
+  return {clubs:d.clubs?.length?d.clubs:[...DEFAULT_CLUBS],guides:Array.isArray(d.guides)?d.guides:[],wake:!!d.wake,tags};
 }
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){alert('保存に失敗しました：'+e.message);}}
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));}
@@ -326,18 +384,20 @@ function filled(h){return !!(h.tee||h.dir||h.aim||h.second||h.green||h.feature);
 /* ---------- ホーム ---------- */
 function renderHome(){
   const el=$('homeList');
-  if(!S.guides.length){el.innerHTML=`<div class="empty">まだ攻略ガイドがありません。<br>右下の「＋ 新規登録」から<br>ゴルフ場とコースを登録してください。</div>`;return;}
+  const imp=`<button class="btn sub" style="margin-bottom:14px" onclick="openImport()">📋 メモから取り込む（OUT/IN・複数コース対応）</button>`;
+  if(!S.guides.length){el.innerHTML=imp+`<div class="empty">まだ攻略ガイドがありません。<br>上のボタンでメモから取り込むか、<br>右下の「＋ 新規登録」から登録してください。</div>`;return;}
   const byClub={};
   S.guides.forEach(g=>(byClub[g.club]=byClub[g.club]||[]).push(g));
   const clubs=Object.keys(byClub).sort((a,b)=>Math.max(...byClub[b].map(g=>g.updated||0))-Math.max(...byClub[a].map(g=>g.updated||0)));
-  el.innerHTML=clubs.map(c=>`<div class="group-title">${esc(c)}</div>`+
+  el.innerHTML=imp+clubs.map(c=>`<div class="group-title">${esc(c)}</div>`+
     byClub[c].sort((a,b)=>(a.startNo||1)-(b.startNo||1)||a.course.localeCompare(b.course,'ja')).map(g=>{
       const n=g.holes.filter(filled).length, m=g.holes.reduce((s,h)=>s+(h.memos?.length||0),0);
       return `<div class="guide-item">
         <div class="info"><div class="t">${esc(g.course)}</div>
-        <div class="s">${holeNo(g,0)}〜${holeNo(g,8)}番・登録 ${n}/9ホール${m?`・メモ ${m}件`:''}</div></div>
+        <div class="s">${holeNo(g,0)}〜${holeNo(g,8)}番・登録 ${n}/9ホール${m?`・メモ ${m}件`:''}${g.analyses?.length?`・最終分析 ${fmtDate(g.analyses[g.analyses.length-1].date)}`:''}</div></div>
+        <div class="btns"><button class="ana" onclick="openAnalysis('${g.id}')">📊 分析</button>
         <button class="edit" onclick="editGuide('${g.id}')">編集</button>
-        <button class="open" onclick="openViewer('${g.id}')">見る</button></div>`;}).join('')).join('');
+        <button class="open" onclick="openViewer('${g.id}')">見る</button></div></div>`;}).join('')).join('');
 }
 
 /* ---------- 登録・編集 ---------- */
@@ -400,9 +460,14 @@ function saveGuide(){
   const club=$('edClub').value.trim(), course=$('edCourse').value.trim();
   if(!club){alert('ゴルフ場名を入力してください');return false;}
   if(!course){alert('コース名を入力してください');return false;}
-  const dup=S.guides.find(g=>g.club===club&&g.course===course&&g.id!==D.id);
-  if(dup){alert('同じゴルフ場・コース名のガイドがすでにあります');return false;}
-  D.club=club;D.course=course;D.updated=Date.now();
+  let useClub=club;
+  const ex=findClub(club);
+  if(ex&&ex!==club){
+    if(confirm(`「${club}」は登録済みの「${ex}」と同じゴルフ場ですか？\n「OK」で「${ex}」にまとめます`)){useClub=ex;$('edClub').value=ex;}
+  }
+  const dup=findDup(useClub,course,D.id);
+  if(dup){alert(`「${dup.club} ${dup.course}」がすでに登録されています。重複を避けるため、そちらを編集してください。`);return false;}
+  D.club=useClub;D.course=course;D.updated=Date.now();
   const i=S.guides.findIndex(g=>g.id===D.id);
   if(i>=0)S.guides[i]=JSON.parse(JSON.stringify(D));else S.guides.push(JSON.parse(JSON.stringify(D)));
   editingId=D.id;persist();dirty=false;$('edTitle').textContent='編集';$('edDelete').style.display='';
@@ -421,16 +486,19 @@ function deleteGuide(){
 
 /* ---------- メモ取り込み（Claude変換） ---------- */
 function buildPrompt(){
-  return `以下のゴルフ場の攻略メモを、次のJSON形式に変換してください。JSONだけを出力してください（説明文やコードブロック記号は不要）。
+  return `以下のゴルフ場の攻略メモを、次のJSON形式に変換してください。JSONだけを出力してください（説明文は不要）。
 
-{"club":"ゴルフ場名","course":"コース名","startNo":1,"notes":"コース共通の目標・ルール","holes":[
- {"no":1,"par":4,"yard":"380y","hc":"7","target":"5","feature":"ホールの特徴・前回の結果","tee":"1W","dir":"C","aim":"ティーショットの狙い目","second":"セカンド以降の注意点","green":"グリーン周りの注意事項"}
+{"club":"ゴルフ場名","courses":[
+ {"course":"コース名","startNo":1,"notes":"このコースの目標・共通ルール","holes":[
+  {"no":1,"par":4,"yard":"380y","hc":"7","target":"5","feature":"ホールの特徴・前回の結果","tee":"1W","dir":"C","aim":"ティーショットの狙い目","second":"セカンド以降の注意点","green":"グリーン周りの注意事項"}
+ ]}
 ]}
 
 ルール：
-- holesは9ホール分。コースが10〜18番ならstartNoは10、noは10〜18
-- メモに複数のコースがある場合は「（ここにコース名）」のコースだけを変換する
-- notesはメモ全体の目標や全ホール共通のルール・傾向を短くまとめる
+- メモに複数のコース（OUTとIN、西と中など）が入っている場合は、coursesに9ホールずつ分けて入れる
+- コース名はメモの表記に合わせる（OUT/IN、西コース/中コースなど）。1〜18番の通し番号だけでコース名がない場合は、1〜9番を"OUT"、10〜18番を"IN"にする
+- startNoは、ホール番号が1〜9ならstartNo=1、10〜18ならstartNo=10（noも同じ番号）
+- notesはメモ全体の目標や全ホール共通のルール・傾向を短くまとめ、各コースに入れる（コース別の目標があればそれも含める）
 - teeは次のクラブ名から選ぶ：${S.clubs.join(' / ')}（候補が複数なら「UT20 / 5W」のように / 区切り。一覧にないクラブはメモの表記のまま。記載なしは空文字）
 - dirはティーショットの方向：L=左, LC=左寄り, C=センター, RC=右寄り, R=右（不明なら空文字）
 - yardは表記のまま文字列（例 "306y（341y）"）。par不明は0
@@ -439,36 +507,215 @@ function buildPrompt(){
 【攻略メモ】
 （ここにメモを貼り付け）`;
 }
-function openImport(){$('promptText').textContent=buildPrompt();$('importText').value='';$('importModal').classList.add('show');}
+function openImport(){$('promptText').textContent=buildPrompt();$('importText').value='';impBack();$('importModal').classList.add('show');}
+function impBack(){$('impStep1').style.display='';$('impStep2').style.display='none';}
 async function copyPrompt(){
   try{await navigator.clipboard.writeText(buildPrompt());toast('指示文をコピーしました');}
   catch(e){const r=document.createRange();r.selectNodeContents($('promptText'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast('選択されたテキストをコピーしてください');}
 }
+/* 名寄せ用の正規化（全角半角・空白・表記ゆれ） */
+function nz(x){return String(x??'').normalize('NFKC').toLowerCase().replace(/[\s・･_（）()「」]/g,'');}
+function normClub(x){return nz(x).replace(/カントリークラブ|カントリー倶楽部|countryclub/g,'cc').replace(/ゴルフクラブ|ゴルフ倶楽部|golfclub|ゴルフコース|golfcourse|ゴルフリンクス/g,'gc').replace(/ゴルフ場$/,'');}
+function clubBase(x){return normClub(x).replace(/(cc|gc)$/,'');}
+function normCourse(x){let c=nz(x).replace(/コース|course/g,'');
+  if(/^(out|アウト|おもて|表)$/.test(c))return 'out'; if(/^(in|イン|うら|裏)$/.test(c))return 'in'; return c;}
+function findClub(name){ // 既存のゴルフ場名を返す（完全一致→表記ゆれ一致→略称一致）
+  const clubs=[...new Set(S.guides.map(g=>g.club))];
+  return clubs.find(c=>c===name)||clubs.find(c=>normClub(c)===normClub(name))||clubs.find(c=>clubBase(c)&&clubBase(c)===clubBase(name))||'';
+}
+function findDup(club,course,exceptId){return S.guides.find(g=>g.id!==exceptId&&normClub(g.club)===normClub(club)&&normCourse(g.course)===normCourse(course));}
+
+let impJ=null;
+function previewImport(){
+  const j=extractJSON($('importText').value);
+  if(!j){alert('読み取れませんでした。Claudeの回答をそのまま全部貼り付けてください。');return;}
+  let courses=Array.isArray(j.courses)?j.courses:(Array.isArray(j.holes)?[{course:j.course,startNo:j.startNo,notes:j.notes,holes:j.holes}]:null);
+  if(!courses||!courses.length){alert('コース情報（courses）が見つかりません');return;}
+  // 18ホール分が1コースに入っていたらOUT/INに分割
+  courses=[].concat(...courses.map(c=>{const hs=c.holes||[];
+    if(hs.length>9){return [{...c,course:c.course||'OUT',startNo:1,holes:hs.filter((h,k)=>(+h.no||k+1)<=9)},{...c,course:'IN',startNo:10,holes:hs.filter((h,k)=>(+h.no||k+1)>=10)}];}
+    return [c];}));
+  impJ={club:norm2(j.club),courses:courses.map(c=>{
+    const st=+c.startNo===10||(c.holes||[]).some(h=>+h.no>=10)?10:1;
+    return {course:norm2(c.course)||(st===10?'IN':'OUT'),startNo:st,notes:norm2(c.notes),holes:c.holes||[]};})};
+  const exist=findClub(impJ.club);
+  const clubs=[...new Set(S.guides.map(g=>g.club))];
+  $('impPreview').innerHTML=`<p class="label">ゴルフ場</p>
+    <select class="input" id="impClubSel" onchange="renderImpRows()">
+      ${clubs.map(c=>`<option value="${esc(c)}" ${c===exist?'selected':''}>既存：${esc(c)}</option>`).join('')}
+      <option value="__new" ${exist?'':'selected'}>新規：${esc(impJ.club||'（名前なし）')}</option>
+    </select>
+    ${exist&&exist!==impJ.club?`<p class="muted" style="margin:4px 0 0">メモの「${esc(impJ.club)}」は登録済みの「${esc(exist)}」と同じと判断しました。違う場合は「新規」を選んでください。</p>`:''}
+    <input class="input" id="impClubNew" style="margin-top:6px" value="${esc(impJ.club)}" oninput="renderImpRows()" placeholder="ゴルフ場名">
+    <p class="label" style="margin-top:12px">コース（${impJ.courses.length}件）</p><div id="impRows"></div>`;
+  renderImpRows();
+  $('impStep1').style.display='none';$('impStep2').style.display='';
+}
+function impClubName(){const v=$('impClubSel').value;$('impClubNew').style.display=v==='__new'?'':'none';return v==='__new'?$('impClubNew').value.trim():v;}
+function renderImpRows(){
+  const club=impClubName(), seen={};
+  $('impRows').innerHTML=impJ.courses.map((c,k)=>{
+    const key=normCourse(c.course), dupIn=seen[key]!==undefined; seen[key]=k;
+    const dup=club&&findDup(club,c.course);
+    const n=c.holes.length;
+    let status;
+    if(dupIn)status=`<span style="color:var(--warn);font-weight:700">取り込み内で重複 → スキップ</span>`;
+    else if(dup)status=`<span style="color:#8a5a00;font-weight:700">登録済み「${esc(dup.course)}」と重複</span>
+      <select class="input" id="impAct${k}" style="margin-top:6px;padding:8px"><option value="update">上書き更新（プレーメモ・分析は残す）</option><option value="skip">取り込まない</option></select>`;
+    else status=`<span style="color:var(--g);font-weight:700">新規登録</span>`;
+    return `<div style="border-top:1px solid var(--line);padding:9px 0">
+      <div style="display:flex;gap:8px;align-items:center"><input class="input" style="flex:1;padding:8px" id="impName${k}" value="${esc(c.course)}" onchange="impJ.courses[${k}].course=this.value.trim();renderImpRows()">
+      <span class="muted" style="white-space:nowrap">${c.startNo}〜${c.startNo+8}番・${n}H</span></div>
+      <div style="margin-top:5px;font-size:13px">${status}</div></div>`;}).join('');
+}
 function applyImport(){
-  let t=$('importText').value.trim();
-  const a=t.indexOf('{'), b=t.lastIndexOf('}');
-  if(a<0||b<0){alert('JSONが見つかりません');return;}
-  let j; try{j=JSON.parse(t.slice(a,b+1));}catch(e){alert('読み取れませんでした。Claudeの出力をそのまま全部貼り付けてください。');return;}
-  if(!Array.isArray(j.holes)){alert('ホール情報（holes）が見つかりません');return;}
-  const hasData=D.holes.some(filled);
-  if(hasData&&!confirm('入力済みのホール内容を取り込み結果で上書きします。よろしいですか？（プレーメモは残ります）'))return;
-  const start=+j.startNo===10?10:1;
-  D.startNo=start;
-  j.holes.forEach((h,k)=>{
-    let i=(h.no?(+h.no-start):k); if(!(i>=0&&i<9))return;
-    const cur=D.holes[i];
-    const norm=v=>String(v??'').trim();
-    const tee=teeList(h.tee).map(t=>S.clubs.find(c=>c.toLowerCase()===t.toLowerCase())||t).join(' / ');
-    Object.assign(cur,{par:[3,4,5].includes(+h.par)?+h.par:0,yard:norm(h.yard),hc:norm(h.hc),target:norm(h.target),feature:norm(h.feature),tee,
-      dir:DIRX[norm(h.dir)]?norm(h.dir):'',aim:norm(h.aim),second:norm(h.second),green:norm(h.green)});
+  const club=impClubName();
+  if(!club){alert('ゴルフ場名を入力してください');return;}
+  if($('impClubSel').value==='__new'){const ex=findClub(club);
+    if(ex&&!confirm(`「${club}」は登録済みの「${ex}」と似ています。別のゴルフ場として登録しますか？\n（同じなら「キャンセル」して既存を選んでください）`))return;}
+  let added=0,updated=0,skipped=0; const seen={};
+  impJ.courses.forEach((c,k)=>{
+    const name=norm2(c.course); const key=normCourse(name);
+    if(!name||seen[key]){skipped++;return;} seen[key]=1;
+    const dup=findDup(club,name);
+    const holes=Array.from({length:9},blankHole);
+    if(dup){
+      const act=$('impAct'+k)?.value||'update';
+      if(act==='skip'){skipped++;return;}
+      c.holes.forEach((h,i)=>{const idx=h.no?(+h.no-(dup.startNo||1)):i;if(!(idx>=0&&idx<9))return;
+        const nw=mapHole(h),cur=dup.holes[idx];Object.keys(nw).forEach(f=>{if(f==='par'?nw.par:String(nw[f])!=='')cur[f]=nw[f];});});
+      if(c.notes)dup.notes=c.notes; dup.updated=Date.now(); updated++;
+    }else{
+      c.holes.forEach((h,i)=>{const idx=h.no?(+h.no-c.startNo):i;if(idx>=0&&idx<9)Object.assign(holes[idx],mapHole(h));});
+      S.guides.push({id:uid(),club,course:name,startNo:c.startNo,notes:c.notes,updated:Date.now(),holes});added++;
+    }
   });
-  if(j.notes&&!(D.notes||'').trim()){D.notes=norm2(j.notes);$('edNotes').value=D.notes;}
-  if(j.club&&!$('edClub').value.trim())$('edClub').value=norm2(j.club);
-  if(j.course&&!$('edCourse').value.trim())$('edCourse').value=norm2(j.course);
-  dirty=true;closeModal('importModal');renderStart();curHole=0;renderHole();updateCourseList();
-  toast('取り込みました。確認して保存してください');
+  persist();closeModal('importModal');renderHome();
+  toast(`新規${added}件・更新${updated}件${skipped?`・スキップ${skipped}件`:''}`);
 }
 function norm2(v){return String(v??'').trim();}
+function mapHole(h){
+  const tee=teeList(h.tee).map(t=>S.clubs.find(c=>c.toLowerCase()===t.toLowerCase())||t).join(' / ');
+  return {par:[3,4,5].includes(+h.par)?+h.par:0,yard:norm2(h.yard),hc:norm2(h.hc),target:norm2(h.target),feature:norm2(h.feature),tee,
+    dir:DIRX[norm2(h.dir)]?norm2(h.dir):'',aim:norm2(h.aim),second:norm2(h.second),green:norm2(h.green)};
+}
+function extractJSON(t){
+  // コードブロック内 → 全体の最初の{〜最後の} の順に試す
+  const blocks=[...t.matchAll(/```(?:json)?\s*([\s\S]*?)```/g)].map(m=>m[1]);
+  for(const c of [...blocks.reverse(),t]){const a=c.indexOf('{'),b=c.lastIndexOf('}');if(a<0||b<0)continue;
+    try{return JSON.parse(c.slice(a,b+1));}catch(e){}}
+  return null;
+}
+
+/* ---------- 分析・更新（Claude連携） ---------- */
+let A=null, anaJ=null;
+const FIELD_LABEL={par:'パー',yard:'距離',hc:'HC',target:'目標',feature:'特徴',tee:'ティークラブ',dir:'方向',aim:'狙い目',second:'2打目〜',green:'グリーン'};
+function openAnalysis(id){
+  A=S.guides.find(g=>g.id===id); if(!A)return;
+  $('anaTitle').textContent=`分析・更新｜${A.club} ${A.course}`;
+  $('anaText').value='';$('anaStep1').style.display='';$('anaStep2').style.display='none';
+  $('anaSize').textContent=`データ量 約${Math.round(buildAnalysisPrompt().length/100)/10}千文字`;
+  $('anaModal').classList.add('show');
+}
+function guideData(g){
+  return {club:g.club,course:g.course,startNo:g.startNo||1,notes:g.notes||'',
+    pastAnalyses:(g.analyses||[]).slice(-3).map(a=>({date:a.date.slice(0,10),summary:a.summary})),
+    holes:g.holes.map((h,i)=>({no:holeNo(g,i),par:h.par||0,yard:h.yard||'',hc:h.hc||'',target:h.target||'',feature:h.feature||'',
+      tee:h.tee||'',dir:h.dir||'',aim:h.aim||'',second:h.second||'',green:h.green||'',
+      memos:(h.memos||[]).map(m=>({date:m.date.slice(0,10),tags:m.tags||[],text:m.text||''}))}))};
+}
+function buildAnalysisPrompt(){
+  const tags=TAG_GROUPS.map(([k,l])=>`${l}：${S.tags[k].join(' / ')}`).join('\n');
+  return `あなたはゴルフのコースマネジメントのコーチです。
+下の【コースデータ】は、私が使っている攻略ガイドアプリのデータです（ホールごとの作戦と、ラウンド中に残したタグ付きのプレーメモ）。
+添付したスコアアプリのスクリーンショット（今回のラウンドのスコア）と合わせて分析し、次回に向けて攻略ガイドを更新してください。
+
+## 手順
+1. 画像から、ホールごとのスコア・パット数・ティーショットの結果（方向やOBなど、記録があれば）を読み取って表にする。読み取れない値は「不明」とし、推測で埋めない。このコース（${guideData(A).course}）のホールだけを対象にする
+2. 各ホールの作戦（tee/dir/aim/second/green）と実際の結果を照合し、作戦が機能したホール・崩れたホールを挙げる
+3. プレーメモのタグ（過去分も含む）から、叩いたホール・癖玉・トラブルの傾向をまとめる
+4. 次回に向けて作戦を見直す。変更は根拠があるホールだけにし、うまくいっている作戦は変えない
+
+## 出力
+最初に分析を日本語で簡潔に書き、最後に次のJSONを1つだけ \`\`\`json のコードブロックで出力してください。
+
+{"app":"golf-guide-update","club":"${A.club}","course":"${A.course}","startNo":${A.startNo||1},
+ "summary":"今回の分析の要点（3〜6行。次回意識すること中心）",
+ "notes":"更新後のコース共通ルール（変更不要なら現在の内容をそのまま）",
+ "round":{"date":"YYYY-MM-DD（画像から分かれば。不明なら空文字）","holes":[{"no":1,"score":5,"putts":2,"tags":["ダブルボギー"],"note":"結果の一言"}]},
+ "holes":[{"no":1,"par":4,"yard":"…","hc":"…","target":"…","feature":"…","tee":"…","dir":"C","aim":"…","second":"…","green":"…","change":"変更理由（変更なしなら空文字）"}]}
+
+## JSONのルール
+- holesは9ホール全部を出力する。変更しない項目も現在の値をそのまま入れる（空にすると消えてしまうため）
+- featureの「前回」の記述は、今回の結果で更新してよい
+- teeは次のクラブから選ぶ（複数なら「 / 」区切り）：${S.clubs.join(' / ')}
+- dirは L=左, LC=左寄り, C=センター, RC=右寄り, R=右
+- round.holesのtagsは次のタグ名だけを使う（該当がなければ空配列）。スコアがパー+2ならダブルボギー、+3ならトリプルボギー、+4以上ならそれ以上
+${tags}
+- 画像が添付されていない場合は、roundを省略してプレーメモだけで分析する
+- memos（プレーメモ）はアプリ側で保持するので出力しない
+
+## コースデータ
+${JSON.stringify(guideData(A))}`;
+}
+async function copyAnalysis(){
+  const t=buildAnalysisPrompt();
+  try{await navigator.clipboard.writeText(t);toast('コピーしました。Claudeに貼り付けてください');}
+  catch(e){
+    if(navigator.share){try{await navigator.share({text:t});return;}catch(_){}}
+    alert('コピーできませんでした');
+  }
+}
+function previewAnalysis(){
+  const j=extractJSON($('anaText').value);
+  if(!j||!Array.isArray(j.holes)){alert('結果のJSONが見つかりません。Claudeの回答を最後まで全部貼り付けてください。');return;}
+  if((j.course&&j.course!==A.course)&&!confirm(`結果のコース名「${j.course}」が「${A.course}」と違います。続けますか？`))return;
+  anaJ=j;
+  const start=A.startNo||1, rows=[];
+  j.holes.forEach((h,k)=>{
+    const i=h.no?(+h.no-start):k; if(!(i>=0&&i<9))return;
+    const nw=mapHole(h), old=A.holes[i];
+    const ch=Object.keys(FIELD_LABEL).filter(f=>String(nw[f]??'')!==String(old[f]??'')&&!(f==='par'&&!nw.par)&&String(nw[f]??'')!=='');
+    if(ch.length)rows.push(`<div style="padding:6px 0;border-top:1px solid var(--line)"><b>${holeNo(A,i)}番</b>：${ch.map(f=>FIELD_LABEL[f]).join('・')}${
+      ch.includes('tee')?`<br><span class="muted">クラブ ${esc(old.tee||'—')} → ${esc(nw.tee)}</span>`:''}${h.change?`<br><span class="muted">${esc(h.change)}</span>`:''}</div>`);
+  });
+  const rh=(j.round&&Array.isArray(j.round.holes))?j.round.holes.filter(x=>x&&x.no):[];
+  const total=rh.reduce((s,x)=>s+(+x.score||0),0);
+  $('anaPreview').innerHTML=
+    (j.summary?`<div class="card" style="background:#f7fbf8"><b style="color:var(--g)">📊 分析の要点</b><div style="white-space:pre-wrap;margin-top:4px">${esc(j.summary)}</div></div>`:'')+
+    `<p class="label">作戦の変更（${rows.length}ホール）</p>${rows.join('')||'<p class="muted">作戦の変更はありません</p>'}`+
+    (rh.length?`<p class="label" style="margin-top:12px">スコアの記録</p><p style="margin:0">${esc(j.round.date||'日付不明')}・${rh.length}ホール${total?`・合計 ${total}`:''}<br><span class="muted">各ホールのプレーメモに、スコアとタグを追加します</span></p>`:'')+
+    ((j.notes&&j.notes.trim()!==(A.notes||'').trim())?`<p class="label" style="margin-top:12px">コース共通ルール</p><p class="muted" style="margin:0">内容が更新されます</p>`:'');
+  $('anaStep1').style.display='none';$('anaStep2').style.display='';
+}
+function applyAnalysis(){
+  const j=anaJ, g=A, start=g.startNo||1, now=new Date().toISOString();
+  j.holes.forEach((h,k)=>{
+    const i=h.no?(+h.no-start):k; if(!(i>=0&&i<9))return;
+    const nw=mapHole(h), cur=g.holes[i];
+    Object.keys(nw).forEach(f=>{ if(f==='par'?nw.par:String(nw[f])!=='') cur[f]=nw[f]; });
+  });
+  if(norm2(j.notes))g.notes=norm2(j.notes);
+  let added=0, skipped=false;
+  if(j.round&&Array.isArray(j.round.holes)){
+    const rd=norm2(j.round.date)||now.slice(0,10);
+    const dateISO=/^\d{4}-\d{2}-\d{2}$/.test(rd)?rd+'T12:00:00':now;
+    const exists=g.holes.some(h=>(h.memos||[]).some(m=>m.round===rd));
+    if(exists&&!confirm(`${rd} のスコアはすでに取り込み済みです。重ねて追加しますか？`))skipped=true;
+    if(!skipped)j.round.holes.forEach(r=>{
+      const i=+r.no-start; if(!(i>=0&&i<9))return;
+      const known=[].concat(...TAG_GROUPS.map(([k])=>S.tags[k]));
+      const tags=(Array.isArray(r.tags)?r.tags:[]).map(norm2).filter(t=>known.includes(t));
+      const parts=[r.score?`スコア${r.score}`:'',r.putts!==undefined&&r.putts!==''&&r.putts!==null?`パット${r.putts}`:''].filter(Boolean).join('・');
+      const text=[parts,norm2(r.note)].filter(Boolean).join('　');
+      if(!text&&!tags.length)return;
+      (g.holes[i].memos=g.holes[i].memos||[]).push({id:uid(),date:dateISO,tags,text:'【スコア】'+text,round:rd});added++;
+    });
+  }
+  (g.analyses=g.analyses||[]).push({date:now,summary:norm2(j.summary)||'（要点なし）'});
+  g.updated=Date.now(); persist(); closeModal('anaModal'); renderHome();
+  toast(`反映しました${added?`（スコア${added}ホール追加）`:''}`);
+}
 
 /* ---------- 閲覧 ---------- */
 let V=null, vwIndex=0, returnToViewer=false, wakeLock=null;
@@ -479,64 +726,73 @@ function openViewer(id,idx=0){
   requestAnimationFrame(()=>{vwJump(idx,false);});
   if(S.wake)acquireWake();
 }
-function fairwaySVG(h){
-  const x=DIRX[h.dir];
-  const tx=x??50;
-  const par3=h.par===3;
-  return `<svg viewBox="0 0 100 120" width="100%" height="150" aria-hidden="true">
-    <path d="M28 118 C 24 90, 18 60, 26 30 C 30 14, 70 14, 74 30 C 82 60, 76 90, 72 118 Z" fill="${par3?'#dfeedd':'#cfe8cf'}"/>
-    <ellipse cx="50" cy="24" rx="13" ry="9" fill="#9fd39f" stroke="#7fbf7f"/>
-    <line x1="50" y1="24" x2="50" y2="12" stroke="#555" stroke-width="1"/><path d="M50 12 L58 15 L50 18 Z" fill="#c0392b"/>
-    <rect x="44" y="108" width="12" height="6" rx="2" fill="#7fbf7f"/>
-    ${x!==undefined?`<path d="M50 108 Q ${(50+tx)/2} ${par3?70:85} ${tx} ${par3?30:56}" fill="none" stroke="#1f5f3f" stroke-width="2.4" stroke-dasharray="4 3"/>
-    <circle cx="${tx}" cy="${par3?30:56}" r="5" fill="#1f5f3f"/><circle cx="${tx}" cy="${par3?30:56}" r="2" fill="#fff"/>`:
-    `<text x="50" y="70" text-anchor="middle" font-size="8" fill="#7d8a80">方向未設定</text>`}
-  </svg>`;
-}
 function renderSlides(){
   const g=V;
   $('vwDots').innerHTML=g.holes.map((h,i)=>`<span onclick="vwJump(${i})">${holeNo(g,i)}</span>`).join('');
   $('vwSlider').innerHTML=g.holes.map((h,i)=>{
-    const dirLabel=(DIRS.find(d=>d[0]===h.dir)||[,''])[1];
     const memos=(h.memos||[]).slice().sort((a,b)=>b.date.localeCompare(a.date));
+    const tees=teeList(h.tee);
+    const meta=[h.par?`PAR${h.par}`:'',h.yard?esc(/\d$/.test(h.yard)?h.yard+'y':h.yard):'',h.hc?`HC${esc(h.hc)}`:''].filter(Boolean).join(' ・ ');
+    const stats=tagStats(h);
     return `<div class="slide" data-i="${i}">
-      <div class="holehead"><div class="holeno">${holeNo(g,i)}<small>番</small></div>
-        <div class="holemeta">${[h.par?`PAR ${h.par}`:'',h.yard?esc(/\d$/.test(h.yard)?h.yard+'y':h.yard):'',h.hc?`HC${esc(h.hc)}`:''].filter(Boolean).join('・')}</div></div>
-      ${h.target?`<div class="target">目標 ${esc(h.target)}</div>`:''}
-      ${g.notes?`<button class="notesbtn" onclick="openNotes()">📋 コース共通ルールを見る</button>`:''}
-      ${h.feature?`<div class="card feat">${esc(h.feature)}</div>`:''}
-      <div class="card">
-        <div class="sec"><h3>① ティーショット</h3></div>
-        <div class="teebox">
-          <div class="teeclub"><div class="k">クラブ</div><div class="v ${teeList(h.tee).length>1?'multi':''}">${h.tee?teeList(h.tee).map(esc).join('<br>'):'—'}</div><div class="d">${dirLabel||'&nbsp;'}</div></div>
-          <div class="fw">${fairwaySVG(h)}</div>
-        </div>
-        ${h.aim?`<div class="aim">🎯 ${esc(h.aim)}</div>`:''}
+      <div class="vh">
+        <div class="vno">${holeNo(g,i)}<small>番</small></div>
+        <div class="vmeta">${meta}</div>
+        ${h.target?`<div class="target">目標 ${esc(h.target)}</div>`:''}
+        ${(g.notes||g.analyses?.length)?`<button class="notesbtn" onclick="openNotes()" aria-label="コース共通ルール">📋</button>`:''}
       </div>
-      <div class="card sec"><h3>② セカンド以降</h3>${h.second?`<div class="body">${esc(h.second)}</div>`:'<div class="none">未登録</div>'}</div>
-      <div class="card sec"><h3>③ グリーン周り</h3>${h.green?`<div class="body">${esc(h.green)}</div>`:'<div class="none">未登録</div>'}</div>
-      <div class="card sec"><h3>✎ プレーメモ ${memos.length?`<span class="muted">（${memos.length}件）</span>`:''}</h3>
-        ${memos.length?memos.map(m=>`<div class="memo"><div class="d">${fmtDate(m.date)}</div><div class="x">${esc(m.text)}</div>
-          <button class="del" onclick="delMemo(${i},'${m.id}')" aria-label="削除">×</button></div>`).join(''):'<div class="none">下の「メモを追加」から、気づいたことを残せます</div>'}
+      ${h.feature?`<div class="feat">${esc(h.feature)}</div>`:''}
+      ${stats?`<div class="stats">過去の記録：${stats}</div>`:''}
+      <div class="vcard">
+        <div class="vrow tee">
+          <div class="lbl">①<br>ティー</div>
+          <div class="teeclub ${tees.length>1?'multi':''}">${tees.length?tees.map(esc).join(' / '):'—'}</div>
+          <div class="teeinfo">${h.dir?`<div class="dir">${DIRARROW[h.dir]}</div>`:''}${h.aim?`<div class="aim">${esc(h.aim)}</div>`:(h.dir?'':'<div class="none">未登録</div>')}</div>
+        </div>
+        <div class="vrow"><div class="lbl">②<br>2打目〜</div><div class="txt">${h.second?esc(h.second):'<span class="none">未登録</span>'}</div></div>
+        <div class="vrow"><div class="lbl">③<br>グリーン</div><div class="txt">${h.green?esc(h.green):'<span class="none">未登録</span>'}</div></div>
+      </div>
+      <div class="vcard memos">
+        <div class="mh">✎ プレーメモ ${memos.length?`<span class="muted">${memos.length}件</span>`:''}</div>
+        ${memos.length?memos.map(m=>`<div class="memo"><div class="d">${fmtDate(m.date)}</div><div class="x">${tagChips(m.tags)}${m.text?`<div>${esc(m.text)}</div>`:''}</div>
+          <button class="del" onclick="delMemo(${i},'${m.id}')" aria-label="削除">×</button></div>`).join(''):'<div class="none">下の「メモを追加」から、タグやメモを残せます</div>'}
       </div>
     </div>`;}).join('');
   const sl=$('vwSlider');
   sl.onscroll=()=>{const i=Math.round(sl.scrollLeft/sl.clientWidth);if(i!==vwIndex){vwIndex=i;updVw();}};
   updVw();
 }
+function tagGroupOf(t){for(const [k] of TAG_GROUPS)if(S.tags[k].includes(t))return k;return 'trouble';}
+function tagChips(tags){if(!tags||!tags.length)return '';
+  return `<div class="tags">${tags.map(t=>{const g=TAG_GROUPS.find(x=>x[0]===tagGroupOf(t));return `<span class="tag" style="color:${g[2]};background:${g[3]}">${esc(t)}</span>`;}).join('')}</div>`;}
+function tagStats(h){const c={};(h.memos||[]).forEach(m=>(m.tags||[]).forEach(t=>c[t]=(c[t]||0)+1));
+  const ks=Object.keys(c); if(!ks.length)return '';
+  const order=[].concat(...TAG_GROUPS.map(([k])=>S.tags[k]));
+  ks.sort((a,b)=>(order.indexOf(a)+1||99)-(order.indexOf(b)+1||99));
+  return ks.map(t=>{const g=TAG_GROUPS.find(x=>x[0]===tagGroupOf(t));return `<span class="tag" style="color:${g[2]};background:${g[3]}">${esc(t)}×${c[t]}</span>`;}).join('');}
 function updVw(){
   document.querySelectorAll('#vwDots span').forEach((s,i)=>s.classList.toggle('on',i===vwIndex));
   $('vwPrev').disabled=vwIndex===0;$('vwNext').disabled=vwIndex===8;
 }
 function vwJump(i,smooth=true){const sl=$('vwSlider');vwIndex=i;sl.scrollTo({left:i*sl.clientWidth,behavior:smooth?'smooth':'auto'});updVw();}
 function vwGo(d){const n=vwIndex+d;if(n>=0&&n<=8)vwJump(n);}
-function openNotes(){$('notesBody').textContent=V.notes||'';$('notesModal').classList.add('show');}
+function openNotes(){
+  const last=(V.analyses||[]).slice(-1)[0];
+  $('notesBody').innerHTML=esc(V.notes||'（共通ルール未登録）')+(last?`<div style="margin-top:14px;padding-top:10px;border-top:1px dashed var(--line)"><b style="color:var(--g)">📊 最新の分析（${fmtDate(last.date)}）</b>\n${esc(last.summary)}</div>`:'');
+  $('notesModal').classList.add('show');}
 function closeViewer(){releaseWake();show('home');renderHome();}
 function editFromViewer(){releaseWake();returnToViewer=true;editingId=V.id;D=JSON.parse(JSON.stringify(V));openEditor(vwIndex);}
-function openMemo(){$('memoTitle').textContent=`${holeNo(V,vwIndex)}番ホールのプレーメモ`;$('memoText').value='';$('memoModal').classList.add('show');setTimeout(()=>$('memoText').focus(),100);}
+let memoSel=[];
+function openMemo(){$('memoTitle').textContent=`${holeNo(V,vwIndex)}番ホールのプレーメモ`;$('memoText').value='';memoSel=[];renderMemoTags();$('memoModal').classList.add('show');}
+function renderMemoTags(){
+  $('memoTags').innerHTML=TAG_GROUPS.map(([k,label,fg,bg])=>`<p class="label" style="margin-top:8px">${label}</p><div class="tagpick">${
+    S.tags[k].map((t,j)=>{const on=memoSel.includes(t);return `<button style="${on?`background:${fg};color:#fff;border-color:${fg}`:`color:${fg};background:${bg};border-color:${bg}`}" onclick="toggleMemoTag('${k}',${j})">${esc(t)}</button>`;}).join('')}</div>`).join('');
+}
+function toggleMemoTag(k,j){const t=S.tags[k][j];memoSel=memoSel.includes(t)?memoSel.filter(x=>x!==t):[...memoSel,t];
+  if(k==='score'&&memoSel.includes(t))memoSel=memoSel.filter(x=>x===t||!S.tags.score.includes(x));renderMemoTags();}
 function saveMemo(){
-  const t=$('memoText').value.trim(); if(!t){closeModal('memoModal');return;}
-  const h=V.holes[vwIndex]; (h.memos=h.memos||[]).push({id:uid(),date:new Date().toISOString(),text:t});
+  const t=$('memoText').value.trim(); if(!t&&!memoSel.length){toast('タグかメモを入力してください');return;}
+  const h=V.holes[vwIndex]; (h.memos=h.memos||[]).push({id:uid(),date:new Date().toISOString(),tags:[...memoSel],text:t});
   V.updated=Date.now(); persist(); closeModal('memoModal');
   const keep=vwIndex, top=$('vwSlider').children[keep].scrollTop; renderSlides(); vwJump(keep,false);
   $('vwSlider').children[keep].scrollTop=top; toast('メモを保存しました');
@@ -555,7 +811,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 function setWake(v){S.wake=v;persist();if(v&&!('wakeLock' in navigator))toast('この端末では未対応のようです');}
 
 /* ---------- 設定 ---------- */
-function openSettings(){renderClubs();$('stWake').checked=!!S.wake;show('settings');}
+function openSettings(){renderClubs();renderTagSettings();$('stWake').checked=!!S.wake;show('settings');}
 function renderClubs(){
   $('stClubs').innerHTML=S.clubs.map((c,i)=>`<div class="clubrow"><div class="n">${esc(c)}</div>
     <button onclick="mvClub(${i},-1)" ${i===0?'disabled style="opacity:.3"':''}>↑</button>
@@ -563,6 +819,15 @@ function renderClubs(){
     <button onclick="renClub(${i})">✎</button>
     <button class="rm" onclick="rmClub(${i})">×</button></div>`).join('')||'<p class="muted">クラブがありません</p>';
 }
+function renderTagSettings(){
+  $('stTags').innerHTML=TAG_GROUPS.map(([k,label,fg,bg])=>`<p class="muted" style="margin:10px 0 6px;font-weight:700;color:${fg}">${label}</p>
+    <div class="tagpick">${S.tags[k].map((t,j)=>`<button style="color:${fg};background:${bg};border-color:${bg}" onclick="rmTag('${k}',${j})">${esc(t)} ×</button>`).join('')}
+    <button style="border:1px dashed ${fg};color:${fg};background:#fff" onclick="addTag('${k}')">＋ 追加</button></div>`).join('');
+}
+function addTag(k){const v=(prompt('追加するタグ名')||'').trim();if(!v)return;
+  if(TAG_GROUPS.some(([g])=>S.tags[g].includes(v))){toast('すでにあります');return;}S.tags[k].push(v);persist();renderTagSettings();}
+function rmTag(k,j){if(!confirm(`タグ「${S.tags[k][j]}」を選択肢から外しますか？（記録済みのメモは残ります）`))return;S.tags[k].splice(j,1);persist();renderTagSettings();}
+function resetTags(){if(!confirm('タグを初期状態に戻しますか？'))return;TAG_GROUPS.forEach(([k])=>S.tags[k]=[...DEFAULT_TAGS[k]]);persist();renderTagSettings();}
 function addClub(){const v=$('stNewClub').value.trim();if(!v)return;if(S.clubs.includes(v)){toast('すでにあります');return;}
   S.clubs.push(v);persist();$('stNewClub').value='';renderClubs();}
 function mvClub(i,d){const j=i+d;if(j<0||j>=S.clubs.length)return;[S.clubs[i],S.clubs[j]]=[S.clubs[j],S.clubs[i]];persist();renderClubs();}
@@ -586,7 +851,7 @@ function importData(inp){
   const r=new FileReader();
   r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.guides))throw 0;
       if(!confirm(`バックアップ（${d.guides.length}コース）で現在のデータを置き換えます。よろしいですか？`))return;
-      S={clubs:d.clubs?.length?d.clubs:[...DEFAULT_CLUBS],guides:d.guides,wake:!!d.wake};persist();openSettings();toast('復元しました');}
+      S=normState(d);persist();openSettings();toast('復元しました');}
     catch(e){alert('バックアップファイルを読み取れませんでした');}
     inp.value='';};
   r.readAsText(f);
