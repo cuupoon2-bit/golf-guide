@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="攻略ガイド">
+<meta name="theme-color" content="#1f5f3f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>コース攻略ガイド</title>
+<style>
+:root{
+  --g:#1f5f3f; --g2:#2e7d52; --gl:#e7f2ea; --bg:#f4f5f2; --card:#fff;
+  --ink:#1b1f1c; --sub:#5d665f; --line:#dde2dc; --warn:#c0392b; --sand:#e9d9a8;
+  --st:env(safe-area-inset-top); --sb:env(safe-area-inset-bottom);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN",sans-serif;
+  -webkit-text-size-adjust:100%;}
+body{overscroll-behavior:none}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.screen{display:none;flex-direction:column;height:100%;}
+.screen.active{display:flex}
+header.bar{position:sticky;top:0;z-index:5;background:var(--g);color:#fff;
+  padding:calc(var(--st) + 10px) 12px 10px;display:flex;align-items:center;gap:8px;min-height:54px}
+header.bar h1{font-size:17px;margin:0;flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbtn{background:rgba(255,255,255,.16);border:0;color:#fff;border-radius:10px;padding:7px 11px;font-size:15px;min-width:44px}
+.hbtn.ghost{background:transparent}
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px calc(var(--sb) + 90px)}
+.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid var(--line)}
+.muted{color:var(--sub);font-size:13px}
+.label{font-size:13px;color:var(--sub);font-weight:600;margin:0 0 6px}
+.input,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:#fff;font-size:16px}
+textarea{min-height:84px;resize:vertical;line-height:1.5}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.btn{border:0;border-radius:12px;padding:13px 16px;font-size:16px;font-weight:600;background:var(--g);color:#fff;width:100%}
+.btn.sub{background:var(--gl);color:var(--g)}
+.btn.danger{background:#fdecea;color:var(--warn)}
+.btn.sm{padding:8px 12px;font-size:14px;width:auto}
+.fab{position:fixed;right:18px;bottom:calc(var(--sb) + 20px);z-index:6;border:0;border-radius:28px;
+  background:var(--g);color:#fff;font-size:16px;font-weight:700;padding:15px 22px;box-shadow:0 6px 18px rgba(0,0,0,.22)}
+/* home */
+.group-title{font-size:14px;font-weight:700;color:var(--g);margin:6px 2px 8px}
+.guide-item{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+.guide-item .info{flex:1;min-width:0}
+.guide-item .t{font-size:17px;font-weight:700}
+.guide-item .s{font-size:12px;color:var(--sub);margin-top:3px}
+.guide-item .open{background:var(--g);color:#fff;border:0;border-radius:10px;padding:10px 14px;font-weight:700}
+.guide-item .edit{background:var(--gl);color:var(--g);border:0;border-radius:10px;padding:10px 12px}
+.empty{text-align:center;color:var(--sub);padding:40px 10px;line-height:1.8}
+/* edit */
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:20px;min-width:44px;height:40px;padding:0 12px;font-weight:700;position:relative}
+.chip.on{background:var(--g);color:#fff;border-color:var(--g)}
+.chip.done::after{content:"";position:absolute;top:4px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--g2)}
+.chip.on.done::after{background:#bfe6cc}
+.clubgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.clubgrid button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:11px 2px;font-weight:700;font-size:15px}
+.clubgrid button.on{background:var(--g);color:#fff;border-color:var(--g)}
+.dirgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.dirgrid button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 0;font-size:13px;font-weight:700}
+.dirgrid button.on{background:var(--g);color:#fff;border-color:var(--g)}
+.seg{display:flex;background:var(--gl);border-radius:10px;padding:3px}
+.seg button{flex:1;border:0;background:transparent;border-radius:8px;padding:8px 0;font-weight:700;color:var(--g)}
+.seg button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.navrow{display:flex;gap:10px;margin-top:4px}
+/* viewer */
+#viewer{background:#eef1ec}
+.slider{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.slider::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100%;width:100%;scroll-snap-align:start;scroll-snap-stop:always;overflow-y:auto;padding:12px 12px calc(var(--sb) + 84px)}
+.holehead{display:flex;align-items:flex-end;gap:10px;margin:2px 4px 10px}
+.holeno{font-size:44px;font-weight:800;line-height:1;color:var(--g)}
+.holeno small{font-size:18px;margin-left:2px}
+.holemeta{font-size:16px;font-weight:700;color:var(--sub);padding-bottom:4px}
+.teebox{display:flex;gap:12px;align-items:stretch}
+.teeclub{flex:0 0 108px;background:var(--g);color:#fff;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px}
+.teeclub .k{font-size:11px;opacity:.85}
+.teeclub .v{font-size:34px;font-weight:800;line-height:1.15}
+.teeclub .d{font-size:14px;font-weight:700;margin-top:2px}
+.fw{flex:1;background:#fff;border-radius:14px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;padding:4px}
+.sec h3{margin:0 0 6px;font-size:14px;color:var(--g);display:flex;align-items:center;gap:6px}
+.sec .body{font-size:17px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.sec .none{color:#a0a8a2;font-size:15px}
+.aim{font-size:17px;font-weight:700;margin-top:10px;line-height:1.5;white-space:pre-wrap}
+.teeclub .v.multi{font-size:22px;line-height:1.25;text-align:center}
+.target{display:inline-block;background:#fff3d6;color:#8a5a00;font-weight:800;border-radius:8px;padding:4px 10px;margin:0 4px 8px;font-size:15px}
+.notesbtn{display:block;width:100%;border:1px dashed var(--g2);background:#f7fbf8;color:var(--g);border-radius:10px;padding:8px;font-size:14px;font-weight:700;margin-bottom:10px}
+.feat{font-size:15px;line-height:1.55;color:#3c463f;white-space:pre-wrap;background:#fafbf8}
+.memo{border-top:1px dashed var(--line);padding:9px 0;display:flex;gap:8px}
+.memo:first-of-type{border-top:0}
+.memo .d{font-size:12px;color:var(--sub);flex:0 0 auto;padding-top:3px}
+.memo .x{flex:1;font-size:16px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.memo .del{border:0;background:transparent;color:#b5bcb6;font-size:18px;padding:0 4px}
+.vfoot{position:fixed;left:0;right:0;bottom:0;z-index:6;background:rgba(255,255,255,.96);border-top:1px solid var(--line);
+  padding:8px 10px calc(var(--sb) + 8px);display:flex;align-items:center;gap:8px;backdrop-filter:blur(8px)}
+.vfoot .nav{border:0;background:var(--gl);color:var(--g);border-radius:12px;width:52px;height:46px;font-size:20px;font-weight:800}
+.vfoot .nav:disabled{opacity:.35}
+.vfoot .memo-btn{flex:1;border:0;background:var(--g);color:#fff;border-radius:12px;height:46px;font-size:16px;font-weight:700}
+.dots{display:flex;justify-content:center;gap:5px;padding:6px 0 2px;background:#eef1ec}
+.dots span{width:24px;height:24px;border-radius:12px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--sub);background:#fff;border:1px solid var(--line)}
+.dots span.on{background:var(--g);color:#fff;border-color:var(--g)}
+/* modal */
+.modal{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.4);display:none;align-items:flex-end}
+.modal.show{display:flex}
+.sheet{background:#fff;width:100%;border-radius:18px 18px 0 0;padding:16px 16px calc(var(--sb) + 16px);max-height:88vh;overflow-y:auto}
+.sheet h2{font-size:17px;margin:0 0 12px}
+.toast{position:fixed;left:50%;bottom:calc(var(--sb) + 90px);transform:translateX(-50%);background:rgba(20,30,24,.9);color:#fff;
+  padding:10px 16px;border-radius:20px;font-size:14px;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+/* settings */
+.clubrow{display:flex;align-items:center;gap:6px;padding:7px 0;border-top:1px solid var(--line)}
+.clubrow:first-child{border-top:0}
+.clubrow .n{flex:1;font-size:16px;font-weight:700}
+.clubrow button{border:0;background:var(--gl);color:var(--g);border-radius:8px;width:38px;height:34px;font-size:15px}
+.clubrow button.rm{background:#fdecea;color:var(--warn)}
+pre.prompt{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:10px;font-size:12px;max-height:150px;overflow:auto;margin:0 0 10px}
+</style>
+</head>
+<body>
+
+<!-- ホーム -->
+<section class="screen active" id="home">
+  <header class="bar">
+    <span style="min-width:44px"></span>
+    <h1>⛳ コース攻略ガイド</h1>
+    <button class="hbtn" onclick="openSettings()">設定</button>
+  </header>
+  <main id="homeList"></main>
+  <button class="fab" onclick="newGuide()">＋ 新規登録</button>
+</section>
+
+<!-- 登録・編集 -->
+<section class="screen" id="editor">
+  <header class="bar">
+    <button class="hbtn" onclick="leaveEditor()">‹ 戻る</button>
+    <h1 id="edTitle">新規登録</h1>
+    <button class="hbtn" onclick="saveGuide()">保存</button>
+  </header>
+  <main>
+    <div class="card">
+      <p class="label">ゴルフ場</p>
+      <select class="input" id="edClubSel" onchange="onClubSel()" style="margin-bottom:8px"></select>
+      <input class="input" id="edClub" placeholder="ゴルフ場名を入力" oninput="markDirty();updateCourseList()" autocomplete="off">
+      <p class="label" style="margin-top:12px">コース名</p>
+      <input class="input" id="edCourse" list="courseList" placeholder="例：西コース / OUT" oninput="markDirty()" autocomplete="off">
+      <datalist id="courseList"></datalist>
+      <p class="label" style="margin-top:12px">ホール番号</p>
+      <div class="seg" id="edStart">
+        <button data-v="1" onclick="setStart(1)">1〜9番</button>
+        <button data-v="10" onclick="setStart(10)">10〜18番</button>
+      </div>
+      <p class="label" style="margin-top:12px">コース共通のメモ（目標・当日のルールなど）</p>
+      <textarea id="edNotes" placeholder="例：目標45。朝一は1Wにこだわらない。グリーンは手前から" oninput="D.notes=this.value;markDirty()"></textarea>
+      <button class="btn sub" style="margin-top:12px" onclick="openImport()">📋 メモから取り込む（Claude変換）</button>
+    </div>
+
+    <div class="chips" id="edChips"></div>
+
+    <div class="card">
+      <div class="row">
+        <div><p class="label">パー</p>
+          <div class="seg" id="edPar">
+            <button data-v="3" onclick="setPar(3)">3</button>
+            <button data-v="4" onclick="setPar(4)">4</button>
+            <button data-v="5" onclick="setPar(5)">5</button>
+          </div></div>
+        <div style="flex:0 0 42%"><p class="label">距離</p>
+          <input class="input" id="edYard" placeholder="例 306y（341y）" oninput="setField('yard',this.value)"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div><p class="label">HC</p><input class="input" id="edHc" inputmode="numeric" placeholder="例 7" oninput="setField('hc',this.value)"></div>
+        <div><p class="label">目標スコア</p><input class="input" id="edTarget" placeholder="例 5（ダボOK）" oninput="setField('target',this.value)"></div>
+      </div>
+      <p class="label" style="margin-top:10px">ホールの特徴</p>
+      <textarea id="edFeature" style="min-height:64px" placeholder="例：まっすぐなミドル。上り。前回7（1W左OB）" oninput="setField('feature',this.value)"></textarea>
+    </div>
+
+    <div class="card">
+      <p class="label">① ティーショット：クラブ <span style="font-weight:400">（複数選択可）</span></p>
+      <div class="clubgrid" id="edClubs"></div>
+      <p class="label" style="margin-top:14px">① ティーショット：方向</p>
+      <div class="dirgrid" id="edDir"></div>
+      <input class="input" id="edAim" style="margin-top:8px" placeholder="狙い目（例：左のバンカー越え、右OB注意）" oninput="setField('aim',this.value)">
+    </div>
+
+    <div class="card">
+      <p class="label">② セカンド以降の注意点</p>
+      <textarea id="edSecond" placeholder="例：花道狙い。グリーン手前の池まで残り120y" oninput="setField('second',this.value)"></textarea>
+    </div>
+
+    <div class="card">
+      <p class="label">③ グリーン周りの注意事項</p>
+      <textarea id="edGreen" placeholder="例：奥に外すと下り。手前から攻める" oninput="setField('green',this.value)"></textarea>
+    </div>
+
+    <div class="navrow">
+      <button class="btn sub" id="edPrev" onclick="moveHole(-1)">‹ 前のホール</button>
+      <button class="btn sub" id="edNext" onclick="moveHole(1)">次のホール ›</button>
+    </div>
+    <button class="btn" style="margin-top:12px" onclick="saveGuide()">保存する</button>
+    <button class="btn danger" id="edDelete" style="margin-top:22px" onclick="deleteGuide()">このコースを削除</button>
+  </main>
+</section>
+
+<!-- 閲覧 -->
+<section class="screen" id="viewer">
+  <header class="bar">
+    <button class="hbtn" onclick="closeViewer()">‹ 一覧</button>
+    <h1 id="vwTitle"></h1>
+    <button class="hbtn" onclick="editFromViewer()">編集</button>
+  </header>
+  <div class="dots" id="vwDots"></div>
+  <div class="slider" id="vwSlider"></div>
+  <div class="vfoot">
+    <button class="nav" id="vwPrev" onclick="vwGo(-1)">‹</button>
+    <button class="memo-btn" onclick="openMemo()">✎ このホールのメモを追加</button>
+    <button class="nav" id="vwNext" onclick="vwGo(1)">›</button>
+  </div>
+</section>
+
+<!-- 設定 -->
+<section class="screen" id="settings">
+  <header class="bar">
+    <button class="hbtn" onclick="show('home');renderHome()">‹ 戻る</button>
+    <h1>設定</h1>
+    <span style="min-width:44px"></span>
+  </header>
+  <main>
+    <div class="card">
+      <p class="label">クラブ一覧（ティーショットの選択肢）</p>
+      <div id="stClubs"></div>
+      <div class="row" style="margin-top:10px">
+        <input class="input" id="stNewClub" placeholder="追加するクラブ（例 3W）">
+        <button class="btn sm" style="flex:0 0 auto" onclick="addClub()">追加</button>
+      </div>
+      <button class="btn sub" style="margin-top:10px" onclick="resetClubs()">初期のクラブ一覧に戻す</button>
+    </div>
+    <div class="card">
+      <p class="label">閲覧時の画面</p>
+      <label style="display:flex;align-items:center;gap:10px;font-size:15px">
+        <input type="checkbox" id="stWake" onchange="setWake(this.checked)" style="width:22px;height:22px">
+        閲覧中は画面を消灯させない（対応端末のみ）
+      </label>
+    </div>
+    <div class="card">
+      <p class="label">バックアップ</p>
+      <p class="muted" style="margin-top:0">データはこのiPhoneの中だけに保存されます。機種変更やSafariのデータ削除に備えて定期的に書き出してください。</p>
+      <button class="btn" onclick="exportData()">バックアップを書き出す</button>
+      <button class="btn sub" style="margin-top:8px" onclick="document.getElementById('importFile').click()">バックアップから復元</button>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(this)">
+    </div>
+    <p class="muted" style="text-align:center">コース攻略ガイド v1.0</p>
+  </main>
+</section>
+
+<!-- メモ追加シート -->
+<div class="modal" id="memoModal" onclick="if(event.target===this)closeModal('memoModal')">
+  <div class="sheet">
+    <h2 id="memoTitle">プレーメモ</h2>
+    <textarea id="memoText" placeholder="例：7Iで手前から。風アゲで1番手大きめが正解だった" style="min-height:120px"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="btn sub" onclick="closeModal('memoModal')">キャンセル</button>
+      <button class="btn" onclick="saveMemo()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- メモ取り込みシート -->
+<div class="modal" id="importModal" onclick="if(event.target===this)closeModal('importModal')">
+  <div class="sheet">
+    <h2>メモから取り込む</h2>
+    <p class="muted" style="margin-top:0">① 指示文をコピー → ② Claudeに指示文と攻略メモを貼り付けて送信 → ③ 返ってきた結果をここに貼り付け</p>
+    <pre class="prompt" id="promptText"></pre>
+    <button class="btn sub" onclick="copyPrompt()">① 指示文をコピー</button>
+    <p class="label" style="margin-top:14px">③ Claudeの結果を貼り付け</p>
+    <textarea id="importText" placeholder='{"club":"…","course":"…","holes":[…]}' style="min-height:110px;font-size:13px"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="btn sub" onclick="closeModal('importModal')">閉じる</button>
+      <button class="btn" onclick="applyImport()">取り込む</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="notesModal" onclick="if(event.target===this)closeModal('notesModal')">
+  <div class="sheet">
+    <h2>コース共通ルール</h2>
+    <div id="notesBody" style="font-size:16px;line-height:1.65;white-space:pre-wrap;word-break:break-word"></div>
+    <button class="btn sub" style="margin-top:14px" onclick="closeModal('notesModal')">閉じる</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY='golfGuide.v1';
+const DEFAULT_CLUBS=['1W','UT20','5I','6I','7I','8I','9I','PW','AW','54','58'];
+const DIRS=[['L','左'],['LC','左寄り'],['C','センター'],['RC','右寄り'],['R','右']];
+const DIRX={L:22,LC:36,C:50,RC:64,R:78};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const blankHole=()=>({par:0,yard:'',hc:'',target:'',feature:'',tee:'',dir:'',aim:'',second:'',green:'',memos:[]});
+const teeList=t=>String(t||'').split('/').map(x=>x.trim()).filter(Boolean);
+
+let S=load();
+function load(){
+  try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.guides))return {clubs:d.clubs?.length?d.clubs:[...DEFAULT_CLUBS],guides:d.guides,wake:!!d.wake};}catch(e){}
+  return {clubs:[...DEFAULT_CLUBS],guides:[],wake:false};
+}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){alert('保存に失敗しました：'+e.message);}}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800);}
+function closeModal(id){$(id).classList.remove('show');}
+function holeNo(g,i){return (g.startNo||1)+i;}
+function fmtDate(iso){const d=new Date(iso);return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;}
+function filled(h){return !!(h.tee||h.dir||h.aim||h.second||h.green||h.feature);}
+
+/* ---------- ホーム ---------- */
+function renderHome(){
+  const el=$('homeList');
+  if(!S.guides.length){el.innerHTML=`<div class="empty">まだ攻略ガイドがありません。<br>右下の「＋ 新規登録」から<br>ゴルフ場とコースを登録してください。</div>`;return;}
+  const byClub={};
+  S.guides.forEach(g=>(byClub[g.club]=byClub[g.club]||[]).push(g));
+  const clubs=Object.keys(byClub).sort((a,b)=>Math.max(...byClub[b].map(g=>g.updated||0))-Math.max(...byClub[a].map(g=>g.updated||0)));
+  el.innerHTML=clubs.map(c=>`<div class="group-title">${esc(c)}</div>`+
+    byClub[c].sort((a,b)=>(a.startNo||1)-(b.startNo||1)||a.course.localeCompare(b.course,'ja')).map(g=>{
+      const n=g.holes.filter(filled).length, m=g.holes.reduce((s,h)=>s+(h.memos?.length||0),0);
+      return `<div class="guide-item">
+        <div class="info"><div class="t">${esc(g.course)}</div>
+        <div class="s">${holeNo(g,0)}〜${holeNo(g,8)}番・登録 ${n}/9ホール${m?`・メモ ${m}件`:''}</div></div>
+        <button class="edit" onclick="editGuide('${g.id}')">編集</button>
+        <button class="open" onclick="openViewer('${g.id}')">見る</button></div>`;}).join('')).join('');
+}
+
+/* ---------- 登録・編集 ---------- */
+let edClubOpts=[];
+let D=null, curHole=0, dirty=false, editingId=null;
+function newGuide(){editingId=null;D={id:uid(),club:'',course:'',startNo:1,holes:Array.from({length:9},blankHole)};openEditor();}
+function editGuide(id){const g=S.guides.find(x=>x.id===id);if(!g)return;editingId=id;D=JSON.parse(JSON.stringify(g));openEditor();}
+function openEditor(hole=0){
+  curHole=hole;dirty=false;
+  $('edTitle').textContent=editingId?'編集':'新規登録';
+  const clubs=[...new Set(S.guides.map(g=>g.club))];
+  $('edClubSel').innerHTML=`<option value="">${clubs.length?'登録済みのゴルフ場から選択…':'（登録済みのゴルフ場はまだありません）'}</option>`+
+    clubs.map(c=>`<option ${c===D.club?'selected':''}>${esc(c)}</option>`).join('')+`<option value="__new">＋ 新しいゴルフ場を入力</option>`;
+  $('edClub').value=D.club; $('edCourse').value=D.course; $('edNotes').value=D.notes||'';
+  $('edDelete').style.display=editingId?'':'none';
+  updateCourseList(); renderStart(); renderHole(); show('editor'); window.scrollTo(0,0);
+}
+function onClubSel(){
+  const v=$('edClubSel').value;
+  if(v==='__new'){$('edClub').value='';$('edClub').focus();}
+  else if(v){$('edClub').value=v;}
+  markDirty();updateCourseList();
+}
+function updateCourseList(){
+  const c=$('edClub').value.trim();
+  const cs=[...new Set(S.guides.filter(g=>g.club===c).map(g=>g.course))];
+  $('courseList').innerHTML=cs.map(x=>`<option value="${esc(x)}">`).join('');
+}
+function markDirty(){dirty=true;}
+function setStart(v){D.startNo=v;dirty=true;renderStart();renderChips();}
+function renderStart(){document.querySelectorAll('#edStart button').forEach(b=>b.classList.toggle('on',+b.dataset.v===(D.startNo||1)));}
+function renderChips(scroll=true){
+  $('edChips').innerHTML=D.holes.map((h,i)=>`<button class="chip ${i===curHole?'on':''} ${filled(h)?'done':''}" onclick="gotoHole(${i})">${holeNo(D,i)}番</button>`).join('');
+  if(scroll){const on=$('edChips').querySelector('.on'); if(on){const c=$('edChips');c.scrollLeft=on.offsetLeft-c.clientWidth/2+on.clientWidth/2;}}
+}
+function renderHole(){
+  const h=D.holes[curHole];
+  renderChips();
+  document.querySelectorAll('#edPar button').forEach(b=>b.classList.toggle('on',+b.dataset.v===h.par));
+  $('edYard').value=h.yard||''; $('edHc').value=h.hc||''; $('edTarget').value=h.target||''; $('edFeature').value=h.feature||'';
+  const sel=teeList(h.tee);
+  edClubOpts=[...S.clubs]; sel.forEach(t=>{if(!edClubOpts.includes(t))edClubOpts.push(t);});
+  $('edClubs').innerHTML=edClubOpts.map((c,k)=>`<button class="${sel.includes(c)?'on':''}" onclick="setTee(edClubOpts[${k}])">${esc(c)}</button>`).join('');
+  $('edDir').innerHTML=DIRS.map(([k,l])=>`<button class="${k===h.dir?'on':''}" onclick="setDir('${k}')">${l}</button>`).join('');
+  $('edAim').value=h.aim||''; $('edSecond').value=h.second||''; $('edGreen').value=h.green||'';
+  $('edPrev').disabled=curHole===0; $('edNext').disabled=curHole===8;
+  $('edPrev').style.opacity=curHole===0?.4:1; $('edNext').style.opacity=curHole===8?.4:1;
+}
+function gotoHole(i){curHole=i;renderHole();}
+function moveHole(d){const n=curHole+d;if(n<0||n>8)return;curHole=n;renderHole();
+  document.querySelector('#editor main').scrollTo({top:0,behavior:'smooth'});}
+function setField(k,v){D.holes[curHole][k]=v;dirty=true;if(k!=='yard')renderChips(false);}
+function setPar(v){const h=D.holes[curHole];h.par=h.par===v?0:v;dirty=true;renderHole();}
+function setTee(c){const h=D.holes[curHole];let l=teeList(h.tee);
+  l=l.includes(c)?l.filter(x=>x!==c):[...l,c];
+  l.sort((a,b)=>{const ia=edClubOpts.indexOf(a),ib=edClubOpts.indexOf(b);return ia-ib;});
+  h.tee=l.join(' / ');dirty=true;renderHole();}
+function setDir(k){const h=D.holes[curHole];h.dir=h.dir===k?'':k;dirty=true;renderHole();}
+function saveGuide(){
+  const club=$('edClub').value.trim(), course=$('edCourse').value.trim();
+  if(!club){alert('ゴルフ場名を入力してください');return false;}
+  if(!course){alert('コース名を入力してください');return false;}
+  const dup=S.guides.find(g=>g.club===club&&g.course===course&&g.id!==D.id);
+  if(dup){alert('同じゴルフ場・コース名のガイドがすでにあります');return false;}
+  D.club=club;D.course=course;D.updated=Date.now();
+  const i=S.guides.findIndex(g=>g.id===D.id);
+  if(i>=0)S.guides[i]=JSON.parse(JSON.stringify(D));else S.guides.push(JSON.parse(JSON.stringify(D)));
+  editingId=D.id;persist();dirty=false;$('edTitle').textContent='編集';$('edDelete').style.display='';
+  toast('保存しました');return true;
+}
+function leaveEditor(){
+  if(dirty&&!confirm('保存していない変更があります。破棄して戻りますか？'))return;
+  dirty=false;
+  if(returnToViewer&&editingId){returnToViewer=false;openViewer(editingId,vwIndex);}else{show('home');renderHome();}
+}
+function deleteGuide(){
+  if(!editingId)return;
+  if(!confirm(`「${D.club} ${D.course}」を削除します。プレーメモも消えます。よろしいですか？`))return;
+  S.guides=S.guides.filter(g=>g.id!==editingId);persist();dirty=false;returnToViewer=false;show('home');renderHome();toast('削除しました');
+}
+
+/* ---------- メモ取り込み（Claude変換） ---------- */
+function buildPrompt(){
+  return `以下のゴルフ場の攻略メモを、次のJSON形式に変換してください。JSONだけを出力してください（説明文やコードブロック記号は不要）。
+
+{"club":"ゴルフ場名","course":"コース名","startNo":1,"notes":"コース共通の目標・ルール","holes":[
+ {"no":1,"par":4,"yard":"380y","hc":"7","target":"5","feature":"ホールの特徴・前回の結果","tee":"1W","dir":"C","aim":"ティーショットの狙い目","second":"セカンド以降の注意点","green":"グリーン周りの注意事項"}
+]}
+
+ルール：
+- holesは9ホール分。コースが10〜18番ならstartNoは10、noは10〜18
+- メモに複数のコースがある場合は「（ここにコース名）」のコースだけを変換する
+- notesはメモ全体の目標や全ホール共通のルール・傾向を短くまとめる
+- teeは次のクラブ名から選ぶ：${S.clubs.join(' / ')}（候補が複数なら「UT20 / 5W」のように / 区切り。一覧にないクラブはメモの表記のまま。記載なしは空文字）
+- dirはティーショットの方向：L=左, LC=左寄り, C=センター, RC=右寄り, R=右（不明なら空文字）
+- yardは表記のまま文字列（例 "306y（341y）"）。par不明は0
+- 記載がない項目は空文字。メモの内容は省略せず要点を残す
+
+【攻略メモ】
+（ここにメモを貼り付け）`;
+}
+function openImport(){$('promptText').textContent=buildPrompt();$('importText').value='';$('importModal').classList.add('show');}
+async function copyPrompt(){
+  try{await navigator.clipboard.writeText(buildPrompt());toast('指示文をコピーしました');}
+  catch(e){const r=document.createRange();r.selectNodeContents($('promptText'));const s=getSelection();s.removeAllRanges();s.addRange(r);toast('選択されたテキストをコピーしてください');}
+}
+function applyImport(){
+  let t=$('importText').value.trim();
+  const a=t.indexOf('{'), b=t.lastIndexOf('}');
+  if(a<0||b<0){alert('JSONが見つかりません');return;}
+  let j; try{j=JSON.parse(t.slice(a,b+1));}catch(e){alert('読み取れませんでした。Claudeの出力をそのまま全部貼り付けてください。');return;}
+  if(!Array.isArray(j.holes)){alert('ホール情報（holes）が見つかりません');return;}
+  const hasData=D.holes.some(filled);
+  if(hasData&&!confirm('入力済みのホール内容を取り込み結果で上書きします。よろしいですか？（プレーメモは残ります）'))return;
+  const start=+j.startNo===10?10:1;
+  D.startNo=start;
+  j.holes.forEach((h,k)=>{
+    let i=(h.no?(+h.no-start):k); if(!(i>=0&&i<9))return;
+    const cur=D.holes[i];
+    const norm=v=>String(v??'').trim();
+    const tee=teeList(h.tee).map(t=>S.clubs.find(c=>c.toLowerCase()===t.toLowerCase())||t).join(' / ');
+    Object.assign(cur,{par:[3,4,5].includes(+h.par)?+h.par:0,yard:norm(h.yard),hc:norm(h.hc),target:norm(h.target),feature:norm(h.feature),tee,
+      dir:DIRX[norm(h.dir)]?norm(h.dir):'',aim:norm(h.aim),second:norm(h.second),green:norm(h.green)});
+  });
+  if(j.notes&&!(D.notes||'').trim()){D.notes=norm2(j.notes);$('edNotes').value=D.notes;}
+  if(j.club&&!$('edClub').value.trim())$('edClub').value=norm2(j.club);
+  if(j.course&&!$('edCourse').value.trim())$('edCourse').value=norm2(j.course);
+  dirty=true;closeModal('importModal');renderStart();curHole=0;renderHole();updateCourseList();
+  toast('取り込みました。確認して保存してください');
+}
+function norm2(v){return String(v??'').trim();}
+
+/* ---------- 閲覧 ---------- */
+let V=null, vwIndex=0, returnToViewer=false, wakeLock=null;
+function openViewer(id,idx=0){
+  V=S.guides.find(g=>g.id===id); if(!V)return;
+  $("vwTitle").textContent=V.course;
+  renderSlides(); show('viewer');
+  requestAnimationFrame(()=>{vwJump(idx,false);});
+  if(S.wake)acquireWake();
+}
+function fairwaySVG(h){
+  const x=DIRX[h.dir];
+  const tx=x??50;
+  const par3=h.par===3;
+  return `<svg viewBox="0 0 100 120" width="100%" height="150" aria-hidden="true">
+    <path d="M28 118 C 24 90, 18 60, 26 30 C 30 14, 70 14, 74 30 C 82 60, 76 90, 72 118 Z" fill="${par3?'#dfeedd':'#cfe8cf'}"/>
+    <ellipse cx="50" cy="24" rx="13" ry="9" fill="#9fd39f" stroke="#7fbf7f"/>
+    <line x1="50" y1="24" x2="50" y2="12" stroke="#555" stroke-width="1"/><path d="M50 12 L58 15 L50 18 Z" fill="#c0392b"/>
+    <rect x="44" y="108" width="12" height="6" rx="2" fill="#7fbf7f"/>
+    ${x!==undefined?`<path d="M50 108 Q ${(50+tx)/2} ${par3?70:85} ${tx} ${par3?30:56}" fill="none" stroke="#1f5f3f" stroke-width="2.4" stroke-dasharray="4 3"/>
+    <circle cx="${tx}" cy="${par3?30:56}" r="5" fill="#1f5f3f"/><circle cx="${tx}" cy="${par3?30:56}" r="2" fill="#fff"/>`:
+    `<text x="50" y="70" text-anchor="middle" font-size="8" fill="#7d8a80">方向未設定</text>`}
+  </svg>`;
+}
+function renderSlides(){
+  const g=V;
+  $('vwDots').innerHTML=g.holes.map((h,i)=>`<span onclick="vwJump(${i})">${holeNo(g,i)}</span>`).join('');
+  $('vwSlider').innerHTML=g.holes.map((h,i)=>{
+    const dirLabel=(DIRS.find(d=>d[0]===h.dir)||[,''])[1];
+    const memos=(h.memos||[]).slice().sort((a,b)=>b.date.localeCompare(a.date));
+    return `<div class="slide" data-i="${i}">
+      <div class="holehead"><div class="holeno">${holeNo(g,i)}<small>番</small></div>
+        <div class="holemeta">${[h.par?`PAR ${h.par}`:'',h.yard?esc(/\d$/.test(h.yard)?h.yard+'y':h.yard):'',h.hc?`HC${esc(h.hc)}`:''].filter(Boolean).join('・')}</div></div>
+      ${h.target?`<div class="target">目標 ${esc(h.target)}</div>`:''}
+      ${g.notes?`<button class="notesbtn" onclick="openNotes()">📋 コース共通ルールを見る</button>`:''}
+      ${h.feature?`<div class="card feat">${esc(h.feature)}</div>`:''}
+      <div class="card">
+        <div class="sec"><h3>① ティーショット</h3></div>
+        <div class="teebox">
+          <div class="teeclub"><div class="k">クラブ</div><div class="v ${teeList(h.tee).length>1?'multi':''}">${h.tee?teeList(h.tee).map(esc).join('<br>'):'—'}</div><div class="d">${dirLabel||'&nbsp;'}</div></div>
+          <div class="fw">${fairwaySVG(h)}</div>
+        </div>
+        ${h.aim?`<div class="aim">🎯 ${esc(h.aim)}</div>`:''}
+      </div>
+      <div class="card sec"><h3>② セカンド以降</h3>${h.second?`<div class="body">${esc(h.second)}</div>`:'<div class="none">未登録</div>'}</div>
+      <div class="card sec"><h3>③ グリーン周り</h3>${h.green?`<div class="body">${esc(h.green)}</div>`:'<div class="none">未登録</div>'}</div>
+      <div class="card sec"><h3>✎ プレーメモ ${memos.length?`<span class="muted">（${memos.length}件）</span>`:''}</h3>
+        ${memos.length?memos.map(m=>`<div class="memo"><div class="d">${fmtDate(m.date)}</div><div class="x">${esc(m.text)}</div>
+          <button class="del" onclick="delMemo(${i},'${m.id}')" aria-label="削除">×</button></div>`).join(''):'<div class="none">下の「メモを追加」から、気づいたことを残せます</div>'}
+      </div>
+    </div>`;}).join('');
+  const sl=$('vwSlider');
+  sl.onscroll=()=>{const i=Math.round(sl.scrollLeft/sl.clientWidth);if(i!==vwIndex){vwIndex=i;updVw();}};
+  updVw();
+}
+function updVw(){
+  document.querySelectorAll('#vwDots span').forEach((s,i)=>s.classList.toggle('on',i===vwIndex));
+  $('vwPrev').disabled=vwIndex===0;$('vwNext').disabled=vwIndex===8;
+}
+function vwJump(i,smooth=true){const sl=$('vwSlider');vwIndex=i;sl.scrollTo({left:i*sl.clientWidth,behavior:smooth?'smooth':'auto'});updVw();}
+function vwGo(d){const n=vwIndex+d;if(n>=0&&n<=8)vwJump(n);}
+function openNotes(){$('notesBody').textContent=V.notes||'';$('notesModal').classList.add('show');}
+function closeViewer(){releaseWake();show('home');renderHome();}
+function editFromViewer(){releaseWake();returnToViewer=true;editingId=V.id;D=JSON.parse(JSON.stringify(V));openEditor(vwIndex);}
+function openMemo(){$('memoTitle').textContent=`${holeNo(V,vwIndex)}番ホールのプレーメモ`;$('memoText').value='';$('memoModal').classList.add('show');setTimeout(()=>$('memoText').focus(),100);}
+function saveMemo(){
+  const t=$('memoText').value.trim(); if(!t){closeModal('memoModal');return;}
+  const h=V.holes[vwIndex]; (h.memos=h.memos||[]).push({id:uid(),date:new Date().toISOString(),text:t});
+  V.updated=Date.now(); persist(); closeModal('memoModal');
+  const keep=vwIndex, top=$('vwSlider').children[keep].scrollTop; renderSlides(); vwJump(keep,false);
+  $('vwSlider').children[keep].scrollTop=top; toast('メモを保存しました');
+}
+function delMemo(i,mid){
+  if(!confirm('このメモを削除しますか？'))return;
+  const h=V.holes[i]; h.memos=h.memos.filter(m=>m.id!==mid); persist();
+  const top=$('vwSlider').children[i].scrollTop; renderSlides(); vwJump(i,false); $('vwSlider').children[i].scrollTop=top;
+}
+window.addEventListener('resize',()=>{if($('viewer').classList.contains('active'))vwJump(vwIndex,false);});
+
+/* 画面消灯防止 */
+async function acquireWake(){try{if('wakeLock' in navigator){wakeLock=await navigator.wakeLock.request('screen');}}catch(e){}}
+function releaseWake(){try{wakeLock&&wakeLock.release();}catch(e){}wakeLock=null;}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&S.wake&&$('viewer').classList.contains('active'))acquireWake();});
+function setWake(v){S.wake=v;persist();if(v&&!('wakeLock' in navigator))toast('この端末では未対応のようです');}
+
+/* ---------- 設定 ---------- */
+function openSettings(){renderClubs();$('stWake').checked=!!S.wake;show('settings');}
+function renderClubs(){
+  $('stClubs').innerHTML=S.clubs.map((c,i)=>`<div class="clubrow"><div class="n">${esc(c)}</div>
+    <button onclick="mvClub(${i},-1)" ${i===0?'disabled style="opacity:.3"':''}>↑</button>
+    <button onclick="mvClub(${i},1)" ${i===S.clubs.length-1?'disabled style="opacity:.3"':''}>↓</button>
+    <button onclick="renClub(${i})">✎</button>
+    <button class="rm" onclick="rmClub(${i})">×</button></div>`).join('')||'<p class="muted">クラブがありません</p>';
+}
+function addClub(){const v=$('stNewClub').value.trim();if(!v)return;if(S.clubs.includes(v)){toast('すでにあります');return;}
+  S.clubs.push(v);persist();$('stNewClub').value='';renderClubs();}
+function mvClub(i,d){const j=i+d;if(j<0||j>=S.clubs.length)return;[S.clubs[i],S.clubs[j]]=[S.clubs[j],S.clubs[i]];persist();renderClubs();}
+function rmClub(i){if(!confirm(`「${S.clubs[i]}」を一覧から外しますか？（登録済みホールの表示は残ります）`))return;S.clubs.splice(i,1);persist();renderClubs();}
+function renClub(i){const old=S.clubs[i];const v=(prompt('クラブ名を変更',old)||'').trim();if(!v||v===old)return;
+  if(S.clubs.includes(v)){toast('すでにあります');return;}
+  S.clubs[i]=v;
+  if(confirm(`登録済みホールの「${old}」も「${v}」に変更しますか？`))S.guides.forEach(g=>g.holes.forEach(h=>{if(h.tee===old)h.tee=v;}));
+  persist();renderClubs();}
+function resetClubs(){if(!confirm('クラブ一覧を初期状態に戻しますか？'))return;S.clubs=[...DEFAULT_CLUBS];persist();renderClubs();}
+async function exportData(){
+  const d=new Date(), name=`golf-guide-backup-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+  const blob=new Blob([JSON.stringify({app:'golf-guide',version:1,exported:d.toISOString(),...S},null,1)],{type:'application/json'});
+  const file=new File([blob],name,{type:'application/json'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:name});return;}catch(e){if(e.name==='AbortError')return;}}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
+}
+function importData(inp){
+  const f=inp.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.guides))throw 0;
+      if(!confirm(`バックアップ（${d.guides.length}コース）で現在のデータを置き換えます。よろしいですか？`))return;
+      S={clubs:d.clubs?.length?d.clubs:[...DEFAULT_CLUBS],guides:d.guides,wake:!!d.wake};persist();openSettings();toast('復元しました');}
+    catch(e){alert('バックアップファイルを読み取れませんでした');}
+    inp.value='';};
+  r.readAsText(f);
+}
+
+renderHome();
+if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+</script>
+</body>
+</html>
