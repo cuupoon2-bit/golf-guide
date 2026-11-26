@@ -286,7 +286,7 @@ pre.prompt{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:
       <button class="btn sub" style="margin-top:8px" onclick="document.getElementById('importFile').click()">バックアップから復元</button>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(this)">
     </div>
-    <p class="muted" style="text-align:center">コース攻略ガイド v1.9</p>
+    <p class="muted" style="text-align:center">コース攻略ガイド v2.2</p>
   </main>
 </section>
 
@@ -308,7 +308,7 @@ pre.prompt{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:
 <div class="modal" id="importModal" onclick="if(event.target===this)closeModal('importModal')">
   <div class="sheet" id="impStep1">
     <h2>メモから取り込む</h2>
-    <p class="muted" style="margin-top:0">① 指示文をコピー → ② Claudeに指示文と攻略メモを貼り付けて送信 → ③ 返ってきた結果をここに貼り付け</p>
+    <p class="muted" style="margin-top:0">① 指示文をコピー → ② Claudeに指示文を貼り付け、攻略メモ（貼り付けかファイル添付）とスコアカード画像（あれば）を付けて送信 → ③ 返ってきた結果をここに貼り付け</p>
     <pre class="prompt" id="promptText"></pre>
     <button class="btn sub" onclick="copyPrompt()">① 指示文をコピー</button>
     <p class="label" style="margin-top:14px">③ Claudeの結果を貼り付け</p>
@@ -508,16 +508,17 @@ function deleteGuide(){
 /* ---------- メモ取り込み（Claude変換） ---------- */
 function buildPrompt(){
   return `以下のゴルフ場の攻略メモを、私のゴルフ攻略ガイドアプリに取り込むためのJSONに変換してください。
+スコアカードの画像を添付した場合は、そのラウンドの結果も過去のラウンドとして取り込みます。
 
 ## 手順
-1. メモからゴルフ場名とコース名を特定する
+1. メモからゴルフ場名とコース名を特定する。スコアカードの画像（楽天GORA）が添付されていれば、それも読み取る
 2. メモに書かれていない基本情報を、Webで調べて補う。対象は次の項目
    - 正式なゴルフ場名、コース名（OUT/IN、西/中/東 など）
    - ホールごとのパー、距離（ヤード）、ハンディキャップ（HC）
    - ホールの形状・特徴（ドッグレッグ、打ち上げ／打ち下ろし、池・OB・バンカーの位置、2グリーンかどうか など）
    調べる先は、ゴルフ場の公式サイトのコースガイド、楽天GORA、じゃらんゴルフ、GDOなど
 3. メモの内容とWebの情報を合わせて、下の形式のJSONを作る
-4. 回答の構成は次のとおり：調べた情報源（サイト名とURL）と、補った項目を短く一覧にする → 最後にJSONを1つだけ \`\`\`json のコードブロックで出力する
+4. 回答の構成は次のとおり：調べた情報源（サイト名とURL）と、補った項目、画像から読み取ったラウンド（日付・コース・スコア合計）を短く一覧にする → 最後にJSONを1つだけ \`\`\`json のコードブロックで出力する
 
 ## 調べた情報の扱い
 - メモに書いてある内容が最優先。Webの情報と食い違うときはメモの値を使い、回答の一覧で食い違いを指摘する
@@ -531,7 +532,8 @@ function buildPrompt(){
 {"club":"ゴルフ場名","sources":["参照したURL"],"courses":[
  {"course":"コース名","startNo":1,"notes":"このコースの目標・共通ルール","holes":[
   {"no":1,"par":4,"yard":"380y","hc":"7","target":"5","feature":"ホールの特徴・前回の結果","tee":"1W","dir":"C","aim":"ティーショットの狙い目","second":"セカンド以降の注意点","green":"グリーン周りの注意事項"}
- ]}
+ ],
+ "rounds":[{"date":"2026-11-30","green":"","holes":[{"no":1,"score":7,"putts":2,"teeClub":"UT20","teeResult":"左","green":"","tags":["トリプルボギー","OB"],"note":"ティー左・OB"}]}]}
 ]}
 
 ## JSONのルール
@@ -544,8 +546,25 @@ function buildPrompt(){
 - yardは表記のまま文字列（例 "306y（341y）"）。par不明は0
 - メモにもWebにも情報がない項目は空文字。メモの内容は省略せず要点を残す
 
+## 過去のラウンド（rounds）のルール
+- roundsは、スコアカードの画像が添付されているときだけ作る。画像がなければ空配列
+- メモの「前回：7（1W左・OB）」などの記述からはroundsを作らない（日付が分からないため）。これらは従来どおりfeatureに残す
+- 画像1枚（1ラウンド）を1つの要素にし、dateは画像の日付（YYYY-MM-DD）。複数の画像があれば、ラウンドごとに別の要素にする
+- 画像の前半・後半がどのコースか（OUT/IN、西/中など）は、スコアカードに表示されたコース名かホール番号で判断し、該当するcoursesのroundsに入れる。判断できない画像は取り込まず、回答の一覧でその旨を書く
+- 各ホールは次の項目にする。読み取れない値は空文字にし、推測で埋めない
+  - score・putts：数字
+  - teeClub：ティーショットの番手（上のクラブ名に合わせる。U4はUT20）
+  - teeResult：◎→"FWキープ"（ショートホールは"グリーンオン"）、←→"左"、→→"右"、↓→"ショート"、↑→"オーバー"、空欄→空文字
+  - green：使用グリーンの表示があれば「Bグリーン・ベント」のように。全ホール共通ならラウンドのgreenに入れる
+  - tags：次のタグ名だけ。スコアがパー+2ならダブルボギー、+3ならトリプルボギー、+4以上ならそれ以上。バンカー・ペナルティ・OBが1以上ならそのタグ、パットが3以上なら3パット。矢印だけでは球筋が分からないので、癖玉のタグは付けない
+${TAG_GROUPS.map(([k,l])=>`    ${l}：${S.tags[k].join(' / ')}`).join('\n')}
+  - note：結果の一言（例「ティー左・OB」）
+
+${scorecardGuide()}
+
 【攻略メモ】
-（ここにメモを貼り付け）`;
+攻略メモは、この下に貼り付けるか、ファイル（テキスト・Markdown・PDFなど）で添付する。添付ファイルがあればその内容を攻略メモとして扱う。メモが複数のファイルに分かれていればすべて読む。スコアカードの画像と区別がつかない添付があれば、回答の一覧でどう扱ったかを書く
+（ここにメモを貼り付け。ファイルで添付した場合はこの行は不要）`;
 }
 function openImport(){$('promptText').textContent=buildPrompt();$('importText').value='';impBack();$('importModal').classList.add('show');}
 function impBack(){$('impStep1').style.display='';$('impStep2').style.display='none';}
@@ -573,11 +592,13 @@ function previewImport(){
   if(!courses||!courses.length){alert('コース情報（courses）が見つかりません');return;}
   // 18ホール分が1コースに入っていたらOUT/INに分割
   courses=[].concat(...courses.map(c=>{const hs=c.holes||[];
-    if(hs.length>9){return [{...c,course:c.course||'OUT',startNo:1,holes:hs.filter((h,k)=>(+h.no||k+1)<=9)},{...c,course:'IN',startNo:10,holes:hs.filter((h,k)=>(+h.no||k+1)>=10)}];}
+    const rs=Array.isArray(c.rounds)?c.rounds:[];
+    const rsplit=f=>rs.map(r=>({...r,holes:(r.holes||[]).filter(h=>f(+h.no))})).filter(r=>r.holes.length);
+    if(hs.length>9){return [{...c,course:c.course||'OUT',startNo:1,holes:hs.filter((h,k)=>(+h.no||k+1)<=9),rounds:rsplit(n=>n<=9)},{...c,course:'IN',startNo:10,holes:hs.filter((h,k)=>(+h.no||k+1)>=10),rounds:rsplit(n=>n>=10)}];}
     return [c];}));
   impJ={club:norm2(j.club),courses:courses.map(c=>{
     const st=+c.startNo===10||(c.holes||[]).some(h=>+h.no>=10)?10:1;
-    return {course:norm2(c.course)||(st===10?'IN':'OUT'),startNo:st,notes:norm2(c.notes),holes:c.holes||[]};})};
+    return {course:norm2(c.course)||(st===10?'IN':'OUT'),startNo:st,notes:norm2(c.notes),holes:c.holes||[],rounds:(Array.isArray(c.rounds)?c.rounds:[]).filter(r=>r&&Array.isArray(r.holes)&&r.holes.length)};})};
   impJ.sources=Array.isArray(j.sources)?j.sources.map(norm2).filter(Boolean):[];
   const exist=findClub(impJ.club);
   const clubs=[...new Set(S.guides.map(g=>g.club))];
@@ -609,6 +630,7 @@ function renderImpRows(){
     return `<div style="border-top:1px solid var(--line);padding:9px 0">
       <div style="display:flex;gap:8px;align-items:center"><input class="input" style="flex:1;padding:8px" id="impName${k}" value="${esc(c.course)}" onchange="impJ.courses[${k}].course=this.value.trim();renderImpRows()">
       <span class="muted" style="white-space:nowrap">${c.startNo}〜${c.startNo+8}番・${n}H</span></div>
+      ${c.rounds.length?`<div class="muted" style="margin-top:4px">過去のラウンド ${c.rounds.length}回分：${c.rounds.map(r=>esc(roundKeyLabel(r))).join('、')}${dup?'（同じ日付・呼び方の履歴は置き換え）':''}</div>`:''}
       <div style="margin-top:5px;font-size:13px">${status}</div></div>`;}).join('');
 }
 function applyImport(){
@@ -616,7 +638,7 @@ function applyImport(){
   if(!club){alert('ゴルフ場名を入力してください');return;}
   if($('impClubSel').value==='__new'){const ex=findClub(club);
     if(ex&&!confirm(`「${club}」は登録済みの「${ex}」と似ています。別のゴルフ場として登録しますか？\n（同じなら「キャンセル」して既存を選んでください）`))return;}
-  let added=0,updated=0,skipped=0; const seen={};
+  let added=0,updated=0,skipped=0,hist=0; const seen={};
   impJ.courses.forEach((c,k)=>{
     const name=norm2(c.course); const key=normCourse(name);
     if(!name||seen[key]){skipped++;return;} seen[key]=1;
@@ -627,16 +649,36 @@ function applyImport(){
       if(act==='skip'){skipped++;return;}
       c.holes.forEach((h,i)=>{const idx=h.no?(+h.no-(dup.startNo||1)):i;if(!(idx>=0&&idx<9))return;
         const nw=mapHole(h),cur=dup.holes[idx];Object.keys(nw).forEach(f=>{if(f==='par'?nw.par:String(nw[f])!=='')cur[f]=nw[f];});});
-      if(c.notes)dup.notes=c.notes; dup.updated=Date.now(); updated++;
+      if(c.notes)dup.notes=c.notes; hist+=addRounds(dup,c.rounds); dup.updated=Date.now(); updated++;
     }else{
       c.holes.forEach((h,i)=>{const idx=h.no?(+h.no-c.startNo):i;if(idx>=0&&idx<9)Object.assign(holes[idx],mapHole(h));});
-      S.guides.push({id:uid(),club,course:name,startNo:c.startNo,notes:c.notes,updated:Date.now(),holes});added++;
+      const ng={id:uid(),club,course:name,startNo:c.startNo,notes:c.notes,updated:Date.now(),holes};hist+=addRounds(ng,c.rounds);S.guides.push(ng);added++;
     }
   });
   persist();closeModal('importModal');renderHome();
-  toast(`新規${added}件・更新${updated}件${skipped?`・スキップ${skipped}件`:''}`);
+  toast(`新規${added}件・更新${updated}件${skipped?`・スキップ${skipped}件`:''}${hist?`・履歴${hist}件`:''}`);
 }
 function norm2(v){return String(v??'').trim();}
+function roundKeyLabel(r){const d=norm2(r.date);return /^\d{4}-\d{2}-\d{2}$/.test(d)?d.replace(/-/g,'/'):(norm2(r.label)||'日付なし');}
+/* メモ取り込みの過去ラウンドを履歴へ（同じ日付、日付がなければ同じ呼び方の履歴は置き換え） */
+function addRounds(g,rounds){
+  let n=0; const st=g.startNo||1;
+  const known=[].concat(...TAG_GROUPS.map(([k])=>S.tags[k]));
+  (rounds||[]).forEach(r=>{
+    const d=norm2(r.date), date=/^\d{4}-\d{2}-\d{2}$/.test(d)?d:'', label=date?'':(norm2(r.label)||'日付不明');
+    g.holes.forEach(h=>{h.history=(h.history||[]).filter(x=>date?x.date!==date:!(x.date===''&&x.label===label));});
+    (r.holes||[]).forEach(x=>{
+      const i=+x.no-st; if(!(i>=0&&i<9))return;
+      const tc=norm2(x.teeClub), club=S.clubs.find(c=>c.toLowerCase()===tc.toLowerCase())||tc;
+      const num=v=>(v===undefined||v===null||v===''||v===0)?'':String(v);
+      const tags=(Array.isArray(x.tags)?x.tags:[]).map(norm2).filter(t=>known.includes(t));
+      if(!num(x.score)&&!num(x.putts)&&!tc&&!norm2(x.teeResult)&&!tags.length&&!norm2(x.note))return;
+      (g.holes[i].history=g.holes[i].history||[]).push({id:uid(),date,label,score:num(x.score),putts:num(x.putts),
+        teeClub:club,teeResult:norm2(x.teeResult),green:norm2(x.green)||norm2(r.green),tags,note:norm2(x.note),src:'memo'});n++;
+    });
+  });
+  return n;
+}
 function mapHole(h){
   const tee=teeList(h.tee).map(t=>S.clubs.find(c=>c.toLowerCase()===t.toLowerCase())||t).join(' / ');
   return {par:[3,4,5].includes(+h.par)?+h.par:0,yard:norm2(h.yard),hc:norm2(h.hc),target:norm2(h.target),feature:norm2(h.feature),tee,
@@ -665,18 +707,11 @@ function guideData(g){
     pastAnalyses:(g.analyses||[]).slice(-3).map(a=>({date:a.date.slice(0,10),summary:a.summary})),
     holes:g.holes.map((h,i)=>({no:holeNo(g,i),par:h.par||0,yard:h.yard||'',hc:h.hc||'',target:h.target||'',feature:h.feature||'',
       tee:h.tee||'',dir:h.dir||'',aim:h.aim||'',second:h.second||'',green:h.green||'',
-      history:(h.history||[]).map(x=>({date:x.date,score:x.score,putts:x.putts,teeClub:x.teeClub,teeResult:x.teeResult,green:x.green||'',tags:x.tags||[],note:x.note||''})),
+      history:(h.history||[]).map(x=>({date:x.date,label:x.label||'',score:x.score,putts:x.putts,teeClub:x.teeClub,teeResult:x.teeResult,green:x.green||'',tags:x.tags||[],note:x.note||''})),
       memos:(h.memos||[]).map(m=>({date:m.date.slice(0,10),tags:m.tags||[],text:m.text||''}))}))};
 }
-function buildAnalysisPrompt(){
-  const tags=TAG_GROUPS.map(([k,l])=>`${l}：${S.tags[k].join(' / ')}`).join('\n');
-  const course=guideData(A).course, st=A.startNo||1;
-  return `あなたはゴルフのコースマネジメントのコーチです。
-下の【コースデータ】は、私が使っている攻略ガイドアプリのデータです（ホールごとの作戦と、ラウンド中に残したタグ付きのプレーメモ）。
-添付したスコアアプリ（楽天GORA）のスクリーンショットと合わせて分析し、次回に向けて攻略ガイドを更新してください。
-（「ゴルフ攻略ガイド更新」のスキルがある場合も、この指示文の内容を優先してください）
-
-## スコアカード画像の読み方（楽天GORA）
+function scorecardGuide(){
+  return `## スコアカード画像の読み方（楽天GORA）
 上から次の順に並んでいる。
 1. ホール番号（例：10〜18と「前半」合計）
 2. パー
@@ -693,7 +728,17 @@ function buildAnalysisPrompt(){
 8. ペナルティ（数）
 9. OB（数）
 合計の列（「前半」など）で、スコアとパット数の読み取りを検算する。
-画面上部やホール欄に、使用グリーン（A/B、BG/KG など）や芝の種類（高麗・ベントなど）の表示があれば、それも読み取る。
+画面上部やホール欄に、使用グリーン（A/B、BG/KG など）や芝の種類（高麗・ベントなど）の表示があれば、それも読み取る。`;
+}
+function buildAnalysisPrompt(){
+  const tags=TAG_GROUPS.map(([k,l])=>`${l}：${S.tags[k].join(' / ')}`).join('\n');
+  const course=guideData(A).course, st=A.startNo||1;
+  return `あなたはゴルフのコースマネジメントのコーチです。
+下の【コースデータ】は、私が使っている攻略ガイドアプリのデータです（ホールごとの作戦と、ラウンド中に残したタグ付きのプレーメモ）。
+添付したスコアアプリ（楽天GORA）のスクリーンショットと合わせて分析し、次回に向けて攻略ガイドを更新してください。
+（「ゴルフ攻略ガイド更新」のスキルがある場合も、この指示文の内容を優先してください）
+
+${scorecardGuide()}
 
 ## 手順
 1. 画像から、ホールごとのスコア・パット数・ティーショットの結果（方向・番手）・バンカー・ペナルティ・OBを読み取って表にする。読み取れない値は「不明」とし、推測で埋めない。対象はこのコース（${course}：${st}〜${st+8}番）のホールだけ
@@ -843,7 +888,7 @@ function renderSlides(){
       </div>
       <div class="vcard memos">
         <div class="mh">📅 過去のラウンド ${(h.history||[]).length?`<span class="muted">${h.history.length}回</span>`:''}</div>
-        ${(h.history||[]).length?h.history.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(x=>histRow(i,x)).join(''):'<div class="none">まだ記録がありません（📊 分析で取り込むと表示されます）</div>'}
+        ${(h.history||[]).length?h.history.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.label||'').localeCompare(a.label||'','ja')).map(x=>histRow(i,x)).join(''):'<div class="none">まだ記録がありません（📊 分析やメモ取り込みで追加されます）</div>'}
       </div>
       <div class="vcard memos">
         <div class="mh">✎ プレーメモ ${memos.length?`<span class="muted">${memos.length}件</span>`:''}</div>
@@ -860,7 +905,7 @@ function tagChips(tags){if(!tags||!tags.length)return '';
   return `<div class="tags">${tags.map(t=>{const g=TAG_GROUPS.find(x=>x[0]===tagGroupOf(t));return `<span class="tag" style="color:${g[2]};background:${g[3]}">${esc(t)}</span>`;}).join('')}</div>`;}
 function histRow(i,x){
   const nv=v=>v?esc(v):'<span class="nv">未記入</span>';
-  const d=/^\d{4}-\d{2}-\d{2}/.test(x.date||'')?x.date.slice(0,10).replace(/-/g,'/'):(x.date?esc(x.date):'日付未記入');
+  const d=/^\d{4}-\d{2}-\d{2}/.test(x.date||'')?x.date.slice(0,10).replace(/-/g,'/'):(x.label?esc(x.label):'日付未記入');
   return `<div class="hrow"><span class="hd">${d}${x.green?`<span class="hg">${esc(x.green)}</span>`:''}</span><span class="hc">${nv(x.teeClub)}</span><span class="hr">${nv(x.teeResult)}</span>
     <span class="hs">${x.score?`${esc(x.score)}打`:'<span class="nv">未記入</span>'}・${x.putts!==''&&x.putts!=null?`${esc(x.putts)}パット`:'<span class="nv">パット未記入</span>'}</span>
     <button class="del" onclick="delHist(${i},'${x.id}')" aria-label="削除">×</button></div>`;
