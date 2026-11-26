@@ -109,6 +109,14 @@ textarea{min-height:84px;resize:vertical;line-height:1.5}
 .tag{font-size:12px;font-weight:700;border-radius:6px;padding:2px 7px}
 .tagpick{display:flex;flex-wrap:wrap;gap:6px}
 .tagpick button{border:1px solid;border-radius:16px;padding:7px 12px;font-size:14px;font-weight:700}
+.hrow{display:flex;align-items:center;gap:6px;padding:6px 0;border-top:1px dashed var(--line);font-size:14px;white-space:nowrap}
+.hrow:nth-child(2){border-top:0}
+.hrow .hd{color:var(--sub);font-size:12px;flex:0 0 auto}
+.hrow .hc{font-weight:800;color:var(--g);flex:0 0 auto}
+.hrow .hr{flex:0 0 auto}
+.hrow .hs{flex:1;text-align:right;font-weight:700}
+.hrow .nv{color:#a0a8a2;font-weight:400;font-size:12px}
+.hrow .del{border:0;background:transparent;color:#b5bcb6;font-size:16px;padding:0 2px}
 .memo{border-top:1px dashed var(--line);padding:9px 0;display:flex;gap:8px}
 .memo:first-of-type{border-top:0}
 .memo .d{font-size:12px;color:var(--sub);flex:0 0 auto;padding-top:3px}
@@ -276,7 +284,7 @@ pre.prompt{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:
       <button class="btn sub" style="margin-top:8px" onclick="document.getElementById('importFile').click()">バックアップから復元</button>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(this)">
     </div>
-    <p class="muted" style="text-align:center">コース攻略ガイド v1.5</p>
+    <p class="muted" style="text-align:center">コース攻略ガイド v1.6</p>
   </main>
 </section>
 
@@ -373,7 +381,16 @@ function load(){
 }
 function normState(d){
   const tags={};TAG_GROUPS.forEach(([k])=>tags[k]=Array.isArray(d.tags?.[k])?d.tags[k]:[...DEFAULT_TAGS[k]]);
-  return {clubs:d.clubs?.length?d.clubs:[...DEFAULT_CLUBS],guides:Array.isArray(d.guides)?d.guides:[],wake:!!d.wake,tags};
+  const guides=Array.isArray(d.guides)?d.guides:[];
+  guides.forEach(g=>(g.holes||[]).forEach(h=>{
+    h.history=h.history||[];
+    const old=(h.memos||[]).filter(m=>m.round);
+    old.forEach(m=>{const t=m.text||'';
+      h.history.push({id:m.id,date:m.round,score:(t.match(/スコア(\d+)/)||[])[1]||'',putts:(t.match(/パット(\d+)/)||[])[1]||'',
+        teeClub:'',teeResult:'',tags:m.tags||[],note:t.replace(/^【スコア】/,'').replace(/スコア\d+・?|パット\d+/g,'').trim()});});
+    h.memos=(h.memos||[]).filter(m=>!m.round);
+  }));
+  return {clubs:d.clubs?.length?d.clubs:[...DEFAULT_CLUBS],guides,wake:!!d.wake,tags};
 }
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){alert('保存に失敗しました：'+e.message);}}
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));}
@@ -645,6 +662,7 @@ function guideData(g){
     pastAnalyses:(g.analyses||[]).slice(-3).map(a=>({date:a.date.slice(0,10),summary:a.summary})),
     holes:g.holes.map((h,i)=>({no:holeNo(g,i),par:h.par||0,yard:h.yard||'',hc:h.hc||'',target:h.target||'',feature:h.feature||'',
       tee:h.tee||'',dir:h.dir||'',aim:h.aim||'',second:h.second||'',green:h.green||'',
+      history:(h.history||[]).map(x=>({date:x.date,score:x.score,putts:x.putts,teeClub:x.teeClub,teeResult:x.teeResult,tags:x.tags||[],note:x.note||''})),
       memos:(h.memos||[]).map(m=>({date:m.date.slice(0,10),tags:m.tags||[],text:m.text||''}))}))};
 }
 function buildAnalysisPrompt(){
@@ -686,7 +704,7 @@ function buildAnalysisPrompt(){
 {"app":"golf-guide-update","club":"${A.club}","course":"${A.course}","startNo":${st},
  "summary":"今回の分析の要点（3〜6行。次回意識すること中心）",
  "notes":"更新後のコース共通ルール（変更不要なら現在の内容をそのまま）",
- "round":{"date":"YYYY-MM-DD（画像から分かれば。不明なら空文字）","holes":[{"no":${st},"score":5,"putts":2,"tags":["ダブルボギー"],"note":"結果の一言"}]},
+ "round":{"date":"YYYY-MM-DD（画像から分かれば。不明なら空文字）","holes":[{"no":${st},"score":5,"putts":2,"teeClub":"UT20","teeResult":"左","tags":["ダブルボギー"],"note":"結果の一言"}]},
  "holes":[{"no":${st},"par":4,"yard":"…","hc":"…","target":"…","feature":"…","tee":"…","dir":"C","aim":"…","second":"…","green":"…","change":"変更理由（変更なしなら空文字）"}]}
 
 ## JSONのルール
@@ -699,6 +717,8 @@ function buildAnalysisPrompt(){
 - round.holesのtagsは次のタグ名だけを使う（該当がなければ空配列）。スコアがパー+2ならダブルボギー、+3ならトリプルボギー、+4以上ならそれ以上
 ${tags}
 - バンカー・ペナルティ・OBが1以上ならそのタグを付ける。パットが3以上なら3パット
+- round.holesのteeClubはティーショットの番手（上のクラブ名に合わせる。U4はUT20。空欄なら空文字）、teeResultはティーショットの結果で、◎→"FWキープ"（ショートホールは"グリーンオン"）、←→"左"、→→"右"、↓→"ショート"、↑→"オーバー"、空欄→空文字
+- 各ホールのhistoryは過去のラウンド結果（アプリ側で保持するので出力しない）。傾向の分析に使う
 - 矢印は外れた方向しか分からないので、癖玉のタグ（引っ掛け・スライス・チョロなど）は付けず、noteに「ティー左」「ティーショート」のように書く。プレーメモに球筋の記録があればそれに従う
 - 画像が添付されていない場合は、roundを省略してプレーメモだけで分析する
 - memos（プレーメモ）はアプリ側で保持するので出力しない
@@ -732,7 +752,7 @@ function previewAnalysis(){
   $('anaPreview').innerHTML=
     (j.summary?`<div class="card" style="background:#f7fbf8"><b style="color:var(--g)">📊 分析の要点</b><div style="white-space:pre-wrap;margin-top:4px">${esc(j.summary)}</div></div>`:'')+
     `<p class="label">作戦の変更（${rows.length}ホール）</p>${rows.join('')||'<p class="muted">作戦の変更はありません</p>'}`+
-    (rh.length?`<p class="label" style="margin-top:12px">スコアの記録</p><p style="margin:0">${esc(j.round.date||'日付不明')}・${rh.length}ホール${total?`・合計 ${total}`:''}<br><span class="muted">各ホールのプレーメモに、スコアとタグを追加します</span></p>`:'')+
+    (rh.length?`<p class="label" style="margin-top:12px">スコアの記録</p><p style="margin:0">${esc(j.round.date||'日付不明')}・${rh.length}ホール${total?`・合計 ${total}`:''}<br><span class="muted">各ホールの「過去のラウンド」に追加します</span></p>`:'')+
     ((j.notes&&j.notes.trim()!==(A.notes||'').trim())?`<p class="label" style="margin-top:12px">コース共通ルール</p><p class="muted" style="margin:0">内容が更新されます</p>`:'');
   $('anaStep1').style.display='none';$('anaStep2').style.display='';
 }
@@ -747,17 +767,17 @@ function applyAnalysis(){
   let added=0, skipped=false;
   if(j.round&&Array.isArray(j.round.holes)){
     const rd=norm2(j.round.date)||now.slice(0,10);
-    const dateISO=/^\d{4}-\d{2}-\d{2}$/.test(rd)?rd+'T12:00:00':now;
-    const exists=g.holes.some(h=>(h.memos||[]).some(m=>m.round===rd));
+    const _dISO=/^\d{4}-\d{2}-\d{2}$/.test(rd)?rd+'T12:00:00':now;
+    const exists=g.holes.some(h=>(h.history||[]).some(x=>x.date===rd));
     if(exists&&!confirm(`${rd} のスコアはすでに取り込み済みです。重ねて追加しますか？`))skipped=true;
     if(!skipped)j.round.holes.forEach(r=>{
       const i=+r.no-start; if(!(i>=0&&i<9))return;
       const known=[].concat(...TAG_GROUPS.map(([k])=>S.tags[k]));
       const tags=(Array.isArray(r.tags)?r.tags:[]).map(norm2).filter(t=>known.includes(t));
-      const parts=[r.score?`スコア${r.score}`:'',r.putts!==undefined&&r.putts!==''&&r.putts!==null?`パット${r.putts}`:''].filter(Boolean).join('・');
-      const text=[parts,norm2(r.note)].filter(Boolean).join('　');
-      if(!text&&!tags.length)return;
-      (g.holes[i].memos=g.holes[i].memos||[]).push({id:uid(),date:dateISO,tags,text:'【スコア】'+text,round:rd});added++;
+      const tc=norm2(r.teeClub), club=S.clubs.find(c=>c.toLowerCase()===tc.toLowerCase())||(/^u4$/i.test(tc)&&S.clubs.includes('UT20')?'UT20':tc);
+      const num=v=>(v===undefined||v===null||v==='')?'':String(v);
+      (g.holes[i].history=g.holes[i].history||[]).push({id:uid(),date:rd,score:num(r.score),putts:num(r.putts),
+        teeClub:club,teeResult:norm2(r.teeResult),tags,note:norm2(r.note)});added++;
     });
   }
   (g.analyses=g.analyses||[]).push({date:now,summary:norm2(j.summary)||'（要点なし）'});
@@ -801,6 +821,10 @@ function renderSlides(){
         <div class="vrow"><div class="lbl">③<br>グリーン</div><div class="txt">${h.green?esc(h.green):'<span class="none">未登録</span>'}</div></div>
       </div>
       <div class="vcard memos">
+        <div class="mh">📅 過去のラウンド ${(h.history||[]).length?`<span class="muted">${h.history.length}回</span>`:''}</div>
+        ${(h.history||[]).length?h.history.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(x=>histRow(i,x)).join(''):'<div class="none">まだ記録がありません（📊 分析で取り込むと表示されます）</div>'}
+      </div>
+      <div class="vcard memos">
         <div class="mh">✎ プレーメモ ${memos.length?`<span class="muted">${memos.length}件</span>`:''}</div>
         ${memos.length?memos.map(m=>`<div class="memo"><div class="d">${fmtDate(m.date)}</div><div class="x">${tagChips(m.tags)}${m.text?`<div>${esc(m.text)}</div>`:''}</div>
           <button class="del" onclick="delMemo(${i},'${m.id}')" aria-label="削除">×</button></div>`).join(''):'<div class="none">下の「メモを追加」から、タグやメモを残せます</div>'}
@@ -813,7 +837,16 @@ function renderSlides(){
 function tagGroupOf(t){for(const [k] of TAG_GROUPS)if(S.tags[k].includes(t))return k;return 'trouble';}
 function tagChips(tags){if(!tags||!tags.length)return '';
   return `<div class="tags">${tags.map(t=>{const g=TAG_GROUPS.find(x=>x[0]===tagGroupOf(t));return `<span class="tag" style="color:${g[2]};background:${g[3]}">${esc(t)}</span>`;}).join('')}</div>`;}
-function tagStats(h){const c={};(h.memos||[]).forEach(m=>(m.tags||[]).forEach(t=>c[t]=(c[t]||0)+1));
+function histRow(i,x){
+  const nv=v=>v?esc(v):'<span class="nv">未記入</span>';
+  const d=/^\d{4}-\d{2}-\d{2}/.test(x.date||'')?x.date.slice(0,10).replace(/-/g,'/'):(x.date?esc(x.date):'日付未記入');
+  return `<div class="hrow"><span class="hd">${d}</span><span class="hc">${nv(x.teeClub)}</span><span class="hr">${nv(x.teeResult)}</span>
+    <span class="hs">${x.score?`${esc(x.score)}打`:'<span class="nv">未記入</span>'}・${x.putts!==''&&x.putts!=null?`${esc(x.putts)}パット`:'<span class="nv">パット未記入</span>'}</span>
+    <button class="del" onclick="delHist(${i},'${x.id}')" aria-label="削除">×</button></div>`;
+}
+function delHist(i,id){if(!confirm('この履歴を削除しますか？'))return;const h=V.holes[i];h.history=h.history.filter(x=>x.id!==id);persist();
+  const top=$('vwSlider').children[i].scrollTop;renderSlides();vwJump(i,false);$('vwSlider').children[i].scrollTop=top;}
+function tagStats(h){const c={};[...(h.memos||[]),...(h.history||[])].forEach(m=>(m.tags||[]).forEach(t=>c[t]=(c[t]||0)+1));
   const ks=Object.keys(c); if(!ks.length)return '';
   const order=[].concat(...TAG_GROUPS.map(([k])=>S.tags[k]));
   ks.sort((a,b)=>(order.indexOf(a)+1||99)-(order.indexOf(b)+1||99));
