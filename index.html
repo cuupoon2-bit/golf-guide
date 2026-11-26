@@ -119,6 +119,12 @@ textarea{min-height:84px;resize:vertical;line-height:1.5}
 .hrow .hs{flex:1;text-align:right;font-weight:700}
 .hrow .nv{color:#a0a8a2;font-weight:400;font-size:12px}
 .hrow .del{border:0;background:transparent;color:#b5bcb6;font-size:16px;padding:0 2px}
+.done{margin-top:6px;border-top:1px solid var(--line);padding-top:4px}
+.done summary{font-size:13px;font-weight:700;color:var(--sub);padding:6px 0;list-style:none;cursor:pointer}
+.done summary::-webkit-details-marker{display:none}
+.done summary::before{content:"▸ ";}
+.done[open] summary::before{content:"▾ ";}
+.done .memo{opacity:.75}
 .memo{border-top:1px dashed var(--line);padding:9px 0;display:flex;gap:8px}
 .memo:first-of-type{border-top:0}
 .memo .d{font-size:12px;color:var(--sub);flex:0 0 auto;padding-top:3px}
@@ -286,7 +292,7 @@ pre.prompt{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:
       <button class="btn sub" style="margin-top:8px" onclick="document.getElementById('importFile').click()">バックアップから復元</button>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(this)">
     </div>
-    <p class="muted" style="text-align:center">コース攻略ガイド v2.3</p>
+    <p class="muted" style="text-align:center">コース攻略ガイド v2.4</p>
   </main>
 </section>
 
@@ -412,10 +418,10 @@ function renderHome(){
   const clubs=Object.keys(byClub).sort((a,b)=>Math.max(...byClub[b].map(g=>g.updated||0))-Math.max(...byClub[a].map(g=>g.updated||0)));
   el.innerHTML=imp+clubs.map(c=>`<div class="group-title">${esc(c)}</div>`+
     byClub[c].sort((a,b)=>(a.startNo||1)-(b.startNo||1)||a.course.localeCompare(b.course,'ja')).map(g=>{
-      const n=g.holes.filter(filled).length, m=g.holes.reduce((s,h)=>s+(h.memos?.length||0),0);
+      const n=g.holes.filter(filled).length, m=g.holes.reduce((s,h)=>s+(h.memos||[]).filter(x=>!x.reflected).length,0);
       return `<div class="guide-item">
         <div class="info"><div class="t">${esc(g.course)}</div>
-        <div class="s">${holeNo(g,0)}〜${holeNo(g,8)}番・登録 ${n}/9ホール${m?`・メモ ${m}件`:''}${g.analyses?.length?`・最終分析 ${fmtDate(g.analyses[g.analyses.length-1].date)}`:''}</div></div>
+        <div class="s">${holeNo(g,0)}〜${holeNo(g,8)}番・登録 ${n}/9ホール${m?`・未反映メモ ${m}件`:''}${g.analyses?.length?`・最終分析 ${fmtDate(g.analyses[g.analyses.length-1].date)}`:''}</div></div>
         <div class="btns"><button class="ana" onclick="openAnalysis('${g.id}')">📊 分析</button>
         <button class="edit" onclick="editGuide('${g.id}')">編集</button>
         <button class="open" onclick="openViewer('${g.id}')">見る</button></div></div>`;}).join('')).join('');
@@ -709,7 +715,7 @@ function guideData(g){
     holes:g.holes.map((h,i)=>({no:holeNo(g,i),par:h.par||0,yard:h.yard||'',hc:h.hc||'',target:h.target||'',feature:h.feature||'',
       tee:h.tee||'',dir:h.dir||'',aim:h.aim||'',second:h.second||'',green:h.green||'',
       history:(h.history||[]).map(x=>({date:x.date,label:x.label||'',score:x.score,putts:x.putts,teeClub:x.teeClub,teeResult:x.teeResult,green:x.green||'',tags:x.tags||[],note:x.note||''})),
-      memos:(h.memos||[]).map(m=>({date:m.date.slice(0,10),tags:m.tags||[],text:m.text||''}))}))};
+      memos:(h.memos||[]).map(m=>({date:m.date.slice(0,10),reflected:!!m.reflected,tags:m.tags||[],text:m.text||''}))}))};
 }
 function scorecardGuide(){
   return `## スコアカード画像の読み方（楽天GORA）
@@ -785,6 +791,7 @@ ${tags}
 - 矢印は外れた方向しか分からないので、癖玉のタグ（引っ掛け・スライス・チョロなど）は付けず、noteに「ティー左」「ティーショート」のように書く。プレーメモに球筋の記録があればそれに従う
 - 画像が添付されていない場合は、roundを省略してプレーメモだけで分析する
 - memos（プレーメモ）はアプリ側で保持するので出力しない
+- memosのreflected:trueは、前回までの分析ですでに作戦に反映済みのメモ。分析は reflected:false の新しいメモと今回のスコアを中心に行い、反映済みのメモは傾向を見る参考にとどめる（同じ出来事を二重に数えて作戦を変えすぎない）
 
 ## コースデータ
 ${JSON.stringify(guideData(A))}`;
@@ -814,7 +821,7 @@ function previewAnalysis(){
   const total=rh.reduce((s,x)=>s+(+x.score||0),0);
   $('anaPreview').innerHTML=
     (j.summary?`<div class="card" style="background:#f7fbf8"><b style="color:var(--g)">📊 分析の要点</b><div style="white-space:pre-wrap;margin-top:4px">${esc(j.summary)}</div></div>`:'')+
-    `<p class="label">作戦の変更（${rows.length}ホール）</p>${rows.join('')||'<p class="muted">作戦の変更はありません</p>'}`+
+    `${(()=>{const n=A.holes.reduce((s,h)=>s+(h.memos||[]).filter(m=>!m.reflected).length,0);return n?`<p class="muted" style="margin:0 0 8px">反映すると、未反映のプレーメモ${n}件は「反映済み」に折りたたまれます</p>`:''})()}<p class="label">作戦の変更（${rows.length}ホール）</p>${rows.join('')||'<p class="muted">作戦の変更はありません</p>'}`+
     (rh.length?`<p class="label" style="margin-top:12px">スコアの記録</p><p style="margin:0">${esc(j.round.date||'日付不明')}${j.round.green?`・${esc(j.round.green)}`:''}・${rh.length}ホール${total?`・合計 ${total}`:''}<br><span class="muted">各ホールの「過去のラウンド」に追加します</span></p>`:'')+
     ((j.notes&&j.notes.trim()!==(A.notes||'').trim())?`<p class="label" style="margin-top:12px">コース共通ルール</p><p class="muted" style="margin:0">内容が更新されます</p>`:'');
   $('anaStep1').style.display='none';$('anaStep2').style.display='';
@@ -847,9 +854,10 @@ function applyAnalysis(){
         teeClub:club,teeResult:norm2(r.teeResult),green:norm2(r.green)||norm2(j.round.green),tags,note:norm2(r.note)});added++;
     });
   }
+  let refl=0; g.holes.forEach(h=>(h.memos||[]).forEach(m=>{if(!m.reflected){m.reflected=now;refl++;}}));
   (g.analyses=g.analyses||[]).push({date:now,summary:norm2(j.summary)||'（要点なし）'});
   g.updated=Date.now(); persist(); closeModal('anaModal'); renderHome();
-  toast(`反映しました${added?`（スコア${added}ホール追加）`:''}`);
+  toast(`反映しました${added?`（スコア${added}ホール追加）`:''}${refl?`・メモ${refl}件を反映済みに`:''}`);
 }
 
 /* ---------- 閲覧 ---------- */
@@ -866,6 +874,9 @@ function renderSlides(){
   $('vwDots').innerHTML=g.holes.map((h,i)=>`<span onclick="vwJump(${i})">${holeNo(g,i)}</span>`).join('');
   $('vwSlider').innerHTML=g.holes.map((h,i)=>{
     const memos=(h.memos||[]).slice().sort((a,b)=>b.date.localeCompare(a.date));
+    const act=memos.filter(m=>!m.reflected), done=memos.filter(m=>m.reflected);
+    const memoRow=m=>`<div class="memo"><div class="d">${fmtDate(m.date)}</div><div class="x">${tagChips(m.tags)}${m.text?`<div>${esc(m.text)}</div>`:''}</div>
+          <button class="del" onclick="delMemo(${i},'${m.id}')" aria-label="削除">×</button></div>`;
     const tees=teeList(h.tee);
     const meta=[h.par?`PAR${h.par}`:'',h.yard?esc(/\d$/.test(h.yard)?h.yard+'y':h.yard):'',h.hc?`HC${esc(h.hc)}`:''].filter(Boolean).join(' ・ ');
     const stats=tagStats(h);
@@ -892,9 +903,9 @@ function renderSlides(){
         ${(h.history||[]).length?h.history.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.label||'').localeCompare(a.label||'','ja')).map(x=>histRow(i,x)).join(''):'<div class="none">まだ記録がありません（📊 分析やメモ取り込みで追加されます）</div>'}
       </div>
       <div class="vcard memos">
-        <div class="mh">✎ プレーメモ ${memos.length?`<span class="muted">${memos.length}件</span>`:''}</div>
-        ${memos.length?memos.map(m=>`<div class="memo"><div class="d">${fmtDate(m.date)}</div><div class="x">${tagChips(m.tags)}${m.text?`<div>${esc(m.text)}</div>`:''}</div>
-          <button class="del" onclick="delMemo(${i},'${m.id}')" aria-label="削除">×</button></div>`).join(''):'<div class="none">下の「メモを追加」から、タグやメモを残せます</div>'}
+        <div class="mh">✎ プレーメモ ${act.length?`<span class="muted">${act.length}件</span>`:''}</div>
+        ${act.length?act.map(memoRow).join(''):'<div class="none">下の「メモを追加」から、タグやメモを残せます</div>'}
+        ${done.length?`<details class="done"><summary>反映済み ${done.length}件</summary>${done.map(memoRow).join('')}</details>`:''}
       </div>
     </div>`;}).join('');
   const sl=$('vwSlider');
