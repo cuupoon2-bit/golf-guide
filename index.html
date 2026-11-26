@@ -286,7 +286,7 @@ pre.prompt{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:
       <button class="btn sub" style="margin-top:8px" onclick="document.getElementById('importFile').click()">バックアップから復元</button>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(this)">
     </div>
-    <p class="muted" style="text-align:center">コース攻略ガイド v2.2</p>
+    <p class="muted" style="text-align:center">コース攻略ガイド v2.3</p>
   </main>
 </section>
 
@@ -625,7 +625,7 @@ function renderImpRows(){
     let status;
     if(dupIn)status=`<span style="color:var(--warn);font-weight:700">取り込み内で重複 → スキップ</span>`;
     else if(dup)status=`<span style="color:#8a5a00;font-weight:700">登録済み「${esc(dup.course)}」と重複</span>
-      <select class="input" id="impAct${k}" style="margin-top:6px;padding:8px"><option value="update">上書き更新（プレーメモ・分析は残す）</option><option value="skip">取り込まない</option></select>`;
+      <select class="input" id="impAct${k}" style="margin-top:6px;padding:8px"><option value="update">上書き更新（プレーメモ・分析は残す）</option>${c.rounds.length?'<option value="history">履歴だけ追加（攻略はそのまま）</option>':''}<option value="skip">取り込まない</option></select>`;
     else status=`<span style="color:var(--g);font-weight:700">新規登録</span>`;
     return `<div style="border-top:1px solid var(--line);padding:9px 0">
       <div style="display:flex;gap:8px;align-items:center"><input class="input" style="flex:1;padding:8px" id="impName${k}" value="${esc(c.course)}" onchange="impJ.courses[${k}].course=this.value.trim();renderImpRows()">
@@ -638,7 +638,7 @@ function applyImport(){
   if(!club){alert('ゴルフ場名を入力してください');return;}
   if($('impClubSel').value==='__new'){const ex=findClub(club);
     if(ex&&!confirm(`「${club}」は登録済みの「${ex}」と似ています。別のゴルフ場として登録しますか？\n（同じなら「キャンセル」して既存を選んでください）`))return;}
-  let added=0,updated=0,skipped=0,hist=0; const seen={};
+  let added=0,updated=0,skipped=0,hist=0,histOnly=0; const seen={};
   impJ.courses.forEach((c,k)=>{
     const name=norm2(c.course); const key=normCourse(name);
     if(!name||seen[key]){skipped++;return;} seen[key]=1;
@@ -647,6 +647,7 @@ function applyImport(){
     if(dup){
       const act=$('impAct'+k)?.value||'update';
       if(act==='skip'){skipped++;return;}
+      if(act==='history'){hist+=addRounds(dup,c.rounds);dup.updated=Date.now();histOnly++;return;}
       c.holes.forEach((h,i)=>{const idx=h.no?(+h.no-(dup.startNo||1)):i;if(!(idx>=0&&idx<9))return;
         const nw=mapHole(h),cur=dup.holes[idx];Object.keys(nw).forEach(f=>{if(f==='par'?nw.par:String(nw[f])!=='')cur[f]=nw[f];});});
       if(c.notes)dup.notes=c.notes; hist+=addRounds(dup,c.rounds); dup.updated=Date.now(); updated++;
@@ -656,7 +657,7 @@ function applyImport(){
     }
   });
   persist();closeModal('importModal');renderHome();
-  toast(`新規${added}件・更新${updated}件${skipped?`・スキップ${skipped}件`:''}${hist?`・履歴${hist}件`:''}`);
+  toast(`新規${added}件・更新${updated}件${histOnly?`・履歴のみ${histOnly}件`:''}${skipped?`・スキップ${skipped}件`:''}${hist?`・履歴${hist}件`:''}`);
 }
 function norm2(v){return String(v??'').trim();}
 function roundKeyLabel(r){const d=norm2(r.date);return /^\d{4}-\d{2}-\d{2}$/.test(d)?d.replace(/-/g,'/'):(norm2(r.label)||'日付なし');}
