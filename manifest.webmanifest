@@ -1,13 +1,1 @@
-{
-  "name": "コース攻略ガイド",
-  "short_name": "攻略ガイド",
-  "start_url": "./",
-  "scope": "./",
-  "display": "standalone",
-  "background_color": "#f4f5f2",
-  "theme_color": "#1f5f3f",
-  "icons": [
-    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
-    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"}
-  ]
-}
+{"name":"ゴルフ精度ノート","short_name":"精度ノート","start_url":"./","scope":"./","display":"standalone","background_color":"#f4f4f1","theme_color":"#1f5f3a","icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png"},{"src":"icon-512.png","sizes":"512x512","type":"image/png"}]}
