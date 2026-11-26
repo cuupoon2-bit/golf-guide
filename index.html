@@ -112,6 +112,8 @@ textarea{min-height:84px;resize:vertical;line-height:1.5}
 .hrow{display:flex;align-items:center;gap:6px;padding:6px 0;border-top:1px dashed var(--line);font-size:14px;white-space:nowrap}
 .hrow:nth-child(2){border-top:0}
 .hrow .hd{color:var(--sub);font-size:12px;flex:0 0 auto}
+.hrow .hd{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.hrow .hg{font-size:11px;font-weight:700;color:#3b5bab;background:#e8eefb;border-radius:5px;padding:0 5px;line-height:1.5}
 .hrow .hc{font-weight:800;color:var(--g);flex:0 0 auto}
 .hrow .hr{flex:0 0 auto}
 .hrow .hs{flex:1;text-align:right;font-weight:700}
@@ -284,7 +286,7 @@ pre.prompt{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:
       <button class="btn sub" style="margin-top:8px" onclick="document.getElementById('importFile').click()">バックアップから復元</button>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(this)">
     </div>
-    <p class="muted" style="text-align:center">コース攻略ガイド v1.6</p>
+    <p class="muted" style="text-align:center">コース攻略ガイド v1.9</p>
   </main>
 </section>
 
@@ -521,6 +523,7 @@ function buildPrompt(){
 - メモに書いてある内容が最優先。Webの情報と食い違うときはメモの値を使い、回答の一覧で食い違いを指摘する
 - 距離は、レギュラーティー（白ティーなど一般的な男性用ティー）のヤードを使う。2グリーンでメモの表記があればそれに合わせ、なければ「306y（341y）」のように「メイン（もう一方）」の形にする。どのティー・グリーンの距離かをnotesの先頭に1行で書く
 - 調べて分かったホールの特徴は、featureの先頭に「【コース情報】」と付けて入れ、メモ由来の内容と区別する
+- 2グリーンで2つの距離差が10y以上あるホール（特にパー3）は、aimを「Aグリーン：7I／Bグリーン：6I」のようにグリーン別に書き分け、teeには両方のクラブを入れる（メモに書き分けがあればそれに従う。グリーンの呼び方はメモやコースの表記に合わせる）
 - 見つからない情報や確信が持てない情報は推測で埋めず、空文字のままにする（parは0）
 - 改修などでホールの番号や距離が変わっている場合は、新しい情報を使い、その旨を一覧に書く
 
@@ -662,7 +665,7 @@ function guideData(g){
     pastAnalyses:(g.analyses||[]).slice(-3).map(a=>({date:a.date.slice(0,10),summary:a.summary})),
     holes:g.holes.map((h,i)=>({no:holeNo(g,i),par:h.par||0,yard:h.yard||'',hc:h.hc||'',target:h.target||'',feature:h.feature||'',
       tee:h.tee||'',dir:h.dir||'',aim:h.aim||'',second:h.second||'',green:h.green||'',
-      history:(h.history||[]).map(x=>({date:x.date,score:x.score,putts:x.putts,teeClub:x.teeClub,teeResult:x.teeResult,tags:x.tags||[],note:x.note||''})),
+      history:(h.history||[]).map(x=>({date:x.date,score:x.score,putts:x.putts,teeClub:x.teeClub,teeResult:x.teeResult,green:x.green||'',tags:x.tags||[],note:x.note||''})),
       memos:(h.memos||[]).map(m=>({date:m.date.slice(0,10),tags:m.tags||[],text:m.text||''}))}))};
 }
 function buildAnalysisPrompt(){
@@ -690,12 +693,14 @@ function buildAnalysisPrompt(){
 8. ペナルティ（数）
 9. OB（数）
 合計の列（「前半」など）で、スコアとパット数の読み取りを検算する。
+画面上部やホール欄に、使用グリーン（A/B、BG/KG など）や芝の種類（高麗・ベントなど）の表示があれば、それも読み取る。
 
 ## 手順
 1. 画像から、ホールごとのスコア・パット数・ティーショットの結果（方向・番手）・バンカー・ペナルティ・OBを読み取って表にする。読み取れない値は「不明」とし、推測で埋めない。対象はこのコース（${course}：${st}〜${st+8}番）のホールだけ
 2. 各ホールの作戦（tee/dir/aim/second/green）と実際の結果を照合し、作戦が機能したホールと崩れたホールを挙げる
 3. プレーメモのタグ（過去分も含む）から、叩いたホール・癖玉・トラブルの傾向をまとめる
 4. 次回に向けて作戦を見直す。変更するのは根拠があるホールだけにし、うまくいっている作戦は変えない。原因が分からないホールは無理に変えず、次回メモを残すよう促す
+5. 2グリーンのコースでは、グリーンによって番手や狙いを変えるべきホールを洗い出し、作戦をグリーン別に書き分ける（下の「グリーン別の書き分け」を参照）
 
 ## 出力
 最初に分析を日本語で簡潔に書く（読み取り表、機能した・崩れたホール、傾向、変更点）。スマホで読むので短めにする。
@@ -704,8 +709,19 @@ function buildAnalysisPrompt(){
 {"app":"golf-guide-update","club":"${A.club}","course":"${A.course}","startNo":${st},
  "summary":"今回の分析の要点（3〜6行。次回意識すること中心）",
  "notes":"更新後のコース共通ルール（変更不要なら現在の内容をそのまま）",
- "round":{"date":"YYYY-MM-DD（画像から分かれば。不明なら空文字）","holes":[{"no":${st},"score":5,"putts":2,"teeClub":"UT20","teeResult":"左","tags":["ダブルボギー"],"note":"結果の一言"}]},
+ "round":{"date":"YYYY-MM-DD（画像から分かれば。不明なら空文字）","green":"Bグリーン・ベント","holes":[{"no":${st},"score":5,"putts":2,"teeClub":"UT20","teeResult":"左","green":"","tags":["ダブルボギー"],"note":"結果の一言"}]},
  "holes":[{"no":${st},"par":4,"yard":"…","hc":"…","target":"…","feature":"…","tee":"…","dir":"C","aim":"…","second":"…","green":"…","change":"変更理由（変更なしなら空文字）"}]}
+
+## グリーン別の書き分け（2グリーンのコースのみ）
+- 根拠は次の2つ。根拠がないホールは書き分けない
+  1. 距離の違い：yardが「306y（341y）」の形なら、2つのグリーンの距離差。差が10y以上あるホール、特にパー3は番手を書き分ける
+  2. 過去の結果：historyのgreen別に、スコア・ティーの結果・パットに差があるホール
+- グリーンの呼び方は、スコアカードやhistoryの表記（A/B、BG/KG など）に合わせる。yardの「メイン（もう一方）」がどちらのグリーンかは、notesの先頭の説明に従う
+- 書き方の例
+  - aim：「Aグリーン：7Iでピン左／Bグリーン：6Iで手前から」
+  - second・green：グリーンで注意点が違う場合だけ「Aグリーン：…／Bグリーン：…」
+  - tee：書き分けたクラブを両方入れる（例「7I / 6I」）
+- 書き分けた理由（距離差や過去の結果）はchangeに書く
 
 ## JSONのルール
 - club・course・startNoは上の値をそのまま使う
@@ -718,6 +734,7 @@ function buildAnalysisPrompt(){
 ${tags}
 - バンカー・ペナルティ・OBが1以上ならそのタグを付ける。パットが3以上なら3パット
 - round.holesのteeClubはティーショットの番手（上のクラブ名に合わせる。U4はUT20。空欄なら空文字）、teeResultはティーショットの結果で、◎→"FWキープ"（ショートホールは"グリーンオン"）、←→"左"、→→"右"、↓→"ショート"、↑→"オーバー"、空欄→空文字
+- greenは使用したグリーンの情報。画像に使用グリーン（A/B、BG/KG、左/右など）や芝の種類（高麗・ベントなど）の記載があれば「Bグリーン・ベント」「KG・高麗」のように短く入れる。全ホール共通ならround.greenに入れて各ホールのgreenは空文字、ホールごとに違う場合だけ各ホールのgreenに入れる。画像に記載がなければ空文字にし、コース情報から推測して埋めない
 - 各ホールのhistoryは過去のラウンド結果（アプリ側で保持するので出力しない）。傾向の分析に使う
 - 矢印は外れた方向しか分からないので、癖玉のタグ（引っ掛け・スライス・チョロなど）は付けず、noteに「ティー左」「ティーショート」のように書く。プレーメモに球筋の記録があればそれに従う
 - 画像が添付されていない場合は、roundを省略してプレーメモだけで分析する
@@ -752,7 +769,7 @@ function previewAnalysis(){
   $('anaPreview').innerHTML=
     (j.summary?`<div class="card" style="background:#f7fbf8"><b style="color:var(--g)">📊 分析の要点</b><div style="white-space:pre-wrap;margin-top:4px">${esc(j.summary)}</div></div>`:'')+
     `<p class="label">作戦の変更（${rows.length}ホール）</p>${rows.join('')||'<p class="muted">作戦の変更はありません</p>'}`+
-    (rh.length?`<p class="label" style="margin-top:12px">スコアの記録</p><p style="margin:0">${esc(j.round.date||'日付不明')}・${rh.length}ホール${total?`・合計 ${total}`:''}<br><span class="muted">各ホールの「過去のラウンド」に追加します</span></p>`:'')+
+    (rh.length?`<p class="label" style="margin-top:12px">スコアの記録</p><p style="margin:0">${esc(j.round.date||'日付不明')}${j.round.green?`・${esc(j.round.green)}`:''}・${rh.length}ホール${total?`・合計 ${total}`:''}<br><span class="muted">各ホールの「過去のラウンド」に追加します</span></p>`:'')+
     ((j.notes&&j.notes.trim()!==(A.notes||'').trim())?`<p class="label" style="margin-top:12px">コース共通ルール</p><p class="muted" style="margin:0">内容が更新されます</p>`:'');
   $('anaStep1').style.display='none';$('anaStep2').style.display='';
 }
@@ -769,7 +786,11 @@ function applyAnalysis(){
     const rd=norm2(j.round.date)||now.slice(0,10);
     const _dISO=/^\d{4}-\d{2}-\d{2}$/.test(rd)?rd+'T12:00:00':now;
     const exists=g.holes.some(h=>(h.history||[]).some(x=>x.date===rd));
-    if(exists&&!confirm(`${rd} のスコアはすでに取り込み済みです。重ねて追加しますか？`))skipped=true;
+    if(exists){
+      if(confirm(`${rd} のラウンドはすでに取り込み済みです。\n「OK」で今回の内容に置き換えます（「キャンセル」でスコアは取り込まず、作戦の更新だけ行います）`)){
+        g.holes.forEach(h=>{h.history=(h.history||[]).filter(x=>x.date!==rd);});
+      }else skipped=true;
+    }
     if(!skipped)j.round.holes.forEach(r=>{
       const i=+r.no-start; if(!(i>=0&&i<9))return;
       const known=[].concat(...TAG_GROUPS.map(([k])=>S.tags[k]));
@@ -777,7 +798,7 @@ function applyAnalysis(){
       const tc=norm2(r.teeClub), club=S.clubs.find(c=>c.toLowerCase()===tc.toLowerCase())||(/^u4$/i.test(tc)&&S.clubs.includes('UT20')?'UT20':tc);
       const num=v=>(v===undefined||v===null||v==='')?'':String(v);
       (g.holes[i].history=g.holes[i].history||[]).push({id:uid(),date:rd,score:num(r.score),putts:num(r.putts),
-        teeClub:club,teeResult:norm2(r.teeResult),tags,note:norm2(r.note)});added++;
+        teeClub:club,teeResult:norm2(r.teeResult),green:norm2(r.green)||norm2(j.round.green),tags,note:norm2(r.note)});added++;
     });
   }
   (g.analyses=g.analyses||[]).push({date:now,summary:norm2(j.summary)||'（要点なし）'});
@@ -840,7 +861,7 @@ function tagChips(tags){if(!tags||!tags.length)return '';
 function histRow(i,x){
   const nv=v=>v?esc(v):'<span class="nv">未記入</span>';
   const d=/^\d{4}-\d{2}-\d{2}/.test(x.date||'')?x.date.slice(0,10).replace(/-/g,'/'):(x.date?esc(x.date):'日付未記入');
-  return `<div class="hrow"><span class="hd">${d}</span><span class="hc">${nv(x.teeClub)}</span><span class="hr">${nv(x.teeResult)}</span>
+  return `<div class="hrow"><span class="hd">${d}${x.green?`<span class="hg">${esc(x.green)}</span>`:''}</span><span class="hc">${nv(x.teeClub)}</span><span class="hr">${nv(x.teeResult)}</span>
     <span class="hs">${x.score?`${esc(x.score)}打`:'<span class="nv">未記入</span>'}・${x.putts!==''&&x.putts!=null?`${esc(x.putts)}パット`:'<span class="nv">パット未記入</span>'}</span>
     <button class="del" onclick="delHist(${i},'${x.id}')" aria-label="削除">×</button></div>`;
 }
